@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter } from "next/navigation"; // Removed unused imports
 import Image from "next/image";
 
 const SignIn = () => {

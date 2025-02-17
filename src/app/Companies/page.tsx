@@ -1,10 +1,19 @@
 'use client'; // Ensure this file is treated as a client-side component
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation'; // Import router for navigation
 import React from 'react';
 
 const CompanyCard: React.FC = () => {
   const router = useRouter(); // Initialize router for navigation
+
+  // Check if the user is logged in when the component mounts
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (isLoggedIn !== 'true') {
+      router.push('/SignIn'); // Redirect to SignIn page if not logged in
+    }
+  }, [router]);
 
   return (
     <div style={styles.container}>

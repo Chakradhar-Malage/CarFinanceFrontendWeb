@@ -17,7 +17,7 @@ const BillingTypeCard: React.FC = () => {
 
       <div
         className="bg-white rounded-lg p-4 shadow-md w-80 h-36 flex justify-center items-center mb-5 cursor-pointer transition-transform hover:scale-105"
-        onClick={() => router.push('/ViewNonGSTInvoices')}
+        onClick={() => router.push('ViewNonGSTinvoices')}
       >
         <h3 className="text-2xl font-bold text-green-700">Om Sai Generators</h3>
       </div>
@@ -31,7 +31,7 @@ const BillingTypeCard: React.FC = () => {
 
       <div
         className="bg-white rounded-lg p-4 shadow-md w-80 h-36 flex justify-center items-center mb-5 cursor-pointer transition-transform hover:scale-105"
-        onClick={() => router.push('/Generatorquotation')}
+        onClick={() => router.push('Generatorquotation')}
       >
         <h3 className="text-2xl font-bold text-green-700">Generator Quotations</h3>
       </div>

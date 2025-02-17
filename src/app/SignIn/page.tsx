@@ -1,30 +1,37 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Image from "next/image";
 
 const SignIn = () => {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if the user is already logged in
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (isLoggedIn === "true") {
-      router.push("/Companies"); // Navigate to Companies page
+      router.push("/Companies"); // Redirect to Companies page if already logged in
     }
-  }, []);
+  }, [router]);
 
   const handleSignIn = () => {
-    if (username === "OmSai" && password === "9762230555") {
+    // Access the username and password from the environment variables
+    const storedUsername = process.env.NEXT_PUBLIC_USERNAME;
+    const storedPassword = process.env.NEXT_PUBLIC_PASSWORD;
+
+    // Check the username and password
+    if (username === storedUsername && password === storedPassword) {
       // Save login status in localStorage
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("username", username); // Optional: Store username
-      router.push("/Companies"); // Redirect after login
+      setError(null); // Reset error message
+      router.push("/Companies"); // Redirect to Companies page
     } else {
-      alert("Invalid username or password");
+      setError("Invalid username or password"); // Display error message
     }
   };
 
@@ -52,6 +59,9 @@ const SignIn = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+
+      {/* Error Message */}
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {/* Sign In Button */}
       <button

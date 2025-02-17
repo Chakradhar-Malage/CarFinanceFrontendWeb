@@ -27,13 +27,14 @@ export default function Home() {
       </h2>
 
       {/* Navigation Links */}
-      <nav className="mt-8 space-y-2">
-        <Link href="/GenerateInvoice" className="text-xl text-blue-600 block">Invoice</Link>
-        <Link href="/Companies" className="text-xl text-blue-600 block">Companies</Link>
-        <Link href="/exportData" className="text-xl text-blue-600 block">Export Data</Link>
-        <Link href="/ViewInvoices" className="text-xl text-blue-600 block">View Invoices</Link>
-        <Link href="/SignIn" className="text-xl text-blue-600 block">Sign In</Link>
+      <nav className="mt-8 space-y-4">
+        <Link href="/GenerateInvoice" className="text-xl text-blue-600 block px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-800 transition duration-300">Invoice</Link>
+        <Link href="/Companies" className="text-xl text-blue-600 block px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-800 transition duration-300">Companies</Link>
+        <Link href="/exportData" className="text-xl text-blue-600 block px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-800 transition duration-300">Export Data</Link>
+        <Link href="/ViewInvoices" className="text-xl text-blue-600 block px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-800 transition duration-300">View Invoices</Link>
+        <Link href="/SignIn" className="text-xl text-blue-600 block px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-800 transition duration-300">Sign In</Link>
       </nav>
+
     </div>
   );
 }

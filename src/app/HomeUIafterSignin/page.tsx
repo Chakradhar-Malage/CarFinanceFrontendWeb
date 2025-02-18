@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import CarCurrentData from '../components/CarCurrentData';
-import { globalState, loadGlobalState } from '@/src/globalState';
+import CarCurrentData from '../../components/CarCurrentData';
+import { globalState, loadGlobalState } from '../../globalState';
 
 const HomeUIafterSignin = () => {
     const router = useRouter();

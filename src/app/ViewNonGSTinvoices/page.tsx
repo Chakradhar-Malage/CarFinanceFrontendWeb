@@ -1,16 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { FaTrash } from "react-icons/fa";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { FaTrash } from 'react-icons/fa';
+import Image from 'next/image';
 
 const ViewNonGSTInvoices = () => {
-  const [invoices, setInvoices] = useState([]);
-  const [searchName, setSearchName] = useState("");
-  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [searchName, setSearchName] = useState('');
+  const [filteredInvoices, setFilteredInvoices] = useState<any[]>([]);
   const router = useRouter();
+
+  // Component to format a date string for display (MM/DD/YYYY at HH:mm:ss)
+  const FormattedDate = ({ dateString }: { dateString: string }) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return (
+      <span>
+        {month}/{day}/{year} at {hours}:{minutes}:{seconds}
+      </span>
+    );
+  };
+
+  // Function to format a date string for use in URLs (YYYY-MM-DD HH:mm:ss)
+  const formatDateForUrl = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
 
   useEffect(() => {
     fetchInvoices();
@@ -18,17 +46,17 @@ const ViewNonGSTInvoices = () => {
 
   const fetchInvoices = async () => {
     try {
-      const response = await axios.get("http://15.207.48.53:3000/allnongstinvoices");
+      const response = await axios.get('http://15.207.48.53:3000/allnongstinvoices');
       setInvoices(response.data);
       setFilteredInvoices(response.data);
     } catch (error) {
-      console.error("Error fetching invoices:", error);
+      console.error('Error fetching invoices:', error);
     }
   };
 
   const searchByCustomer = async () => {
     if (!searchName) {
-      alert("Please enter a customer name.");
+      window.alert('Please enter a customer name.');
       return;
     }
     try {
@@ -37,78 +65,214 @@ const ViewNonGSTInvoices = () => {
       );
       setFilteredInvoices(response.data);
     } catch (error) {
-      console.error("Error searching invoices:", error);
-      alert("No invoices found for this customer.");
+      console.error('Error searching invoices:', error);
+      window.alert('No invoices found for this customer.');
     }
   };
 
-  const formatDateForUrl = (dateString) => {
-    return new Date(dateString).toISOString().replace("T", " ").slice(0, 19);
+  // Function to open the download URL in a new browser tab
+  const openInBrowser = (customerName: string, createdAt: string) => {
+    const formattedDate = formatDateForUrl(createdAt);
+    const encodedCreatedAt = encodeURIComponent(formattedDate);
+    const url = `http://15.207.48.53:3000/nongstinvoices/${customerName}/${encodedCreatedAt}/download`;
+    window.open(url, '_blank');
   };
 
-  const openInBrowser = (customerName, createdAt) => {
-    const formattedDate = encodeURIComponent(formatDateForUrl(createdAt));
-    window.open(
-      `http://15.207.48.53:3000/nongstinvoices/${customerName}/${formattedDate}/download`,
-      "_blank"
-    );
+  // Delete function for non-GST invoices
+  const deleteNonGstInvoice = async (customerName: string, createdAt: string) => {
+    const formattedDate = formatDateForUrl(createdAt);
+    const encodedCreatedAt = encodeURIComponent(formattedDate);
+    const url = `http://15.207.48.53:3000/deleteNonGstinvoices/${customerName}/${encodedCreatedAt}`;
+    try {
+      await axios.delete(url);
+      window.alert('Invoice deleted successfully');
+      setInvoices((prev) =>
+        prev.filter(
+          (invoice) =>
+            invoice.customer_name !== customerName || invoice.created_at !== createdAt
+        )
+      );
+      setFilteredInvoices((prev) =>
+        prev.filter(
+          (invoice) =>
+            invoice.customer_name !== customerName || invoice.created_at !== createdAt
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      window.alert('Failed to delete invoice');
+    }
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center space-x-4 mb-6">
-        <Image
-          src="/images/usericon.png"
-          alt="User Icon"
-          width={50}
-          height={50}
-          className="rounded-full"
-        />
-        <div>
-          <p className="text-gray-500 text-sm">Hello,</p>
-          <p className="text-lg font-bold text-gray-700">OmSai</p>
+    <div className="container">
+      {/* Header with User Info */}
+      <div className="header-container">
+        <div className="user-img">
+          <Image
+            src="/images/usericon.png"
+            alt="User Icon"
+            width={50}
+            height={50}
+            className="usrimg"
+          />
+        </div>
+        <div className="user-info">
+          <p className="helloname">Hello,</p>
+          <p className="username">OmSai</p>
         </div>
       </div>
 
-      <p className="font-bold mb-4">This is Non-GST section</p>
+      <h2>This is Non GST section</h2>
 
-      <button onClick={() => router.push("/generate-non-gst-invoice")} className="bg-purple-700 text-white px-4 py-2 rounded-lg mb-6">
-        New Invoice
-      </button>
-
-      <div className="flex space-x-2 mb-4">
-        <input
-          type="text"
-          placeholder="Search by customer name"
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          className="border p-2 rounded w-full"
-        />
-        <button onClick={searchByCustomer} className="bg-purple-700 text-white px-4 py-2 rounded-lg">
-          Search
+      {/* Navigation Buttons */}
+      <div className="buttons-container">
+        <button
+          className="view-invoices-button"
+          onClick={() => router.push('/GenerateNonGSTInvoice')}
+        >
+          New Invoice
+        </button>
+        <button
+          className="view-invoices-button"
+          onClick={() => router.push('/NonGstBilling_ledger')}
+        >
+          Billing Ledger
         </button>
       </div>
 
-      <div>
-        {filteredInvoices.map((invoice, index) => (
-          <div key={index} className="relative p-4 border rounded-lg bg-gray-100 mb-4">
-            <button
-              className="absolute top-2 right-2 text-red-600"
-              onClick={() => openInBrowser(invoice.customer_name, invoice.created_at)}
+      {/* Search Section */}
+      <input
+        type="text"
+        className="search-input"
+        placeholder="Search by customer name"
+        value={searchName}
+        onChange={(e) => setSearchName(e.target.value)}
+      />
+      <button className="search-button" onClick={searchByCustomer}>
+        Search
+      </button>
+
+      {/* Invoice List */}
+      <div className="invoices-list">
+        {filteredInvoices.map((item, index) => (
+          <div key={index} className="invoice-item">
+            <div
+              className="delete-icon"
+              onClick={() => deleteNonGstInvoice(item.customer_name, item.created_at)}
             >
-              <FaTrash size={20} />
-            </button>
-            <p className="text-lg font-semibold">Customer: {invoice.customer_name}</p>
-            <p className="text-gray-600">{new Date(invoice.created_at).toLocaleString()}</p>
+              <FaTrash size={24} color="red" />
+            </div>
+            <p className="invoice-text">Customer: {item.customer_name}</p>
+            <p>
+              <FormattedDate dateString={item.created_at} />
+            </p>
             <button
-              onClick={() => openInBrowser(invoice.customer_name, invoice.created_at)}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg mt-3"
+              className="download-button"
+              onClick={() => openInBrowser(item.customer_name, item.created_at)}
             >
               Download
             </button>
           </div>
         ))}
       </div>
+
+      {/* Styled JSX for component styling */}
+      <style jsx>{`
+        .container {
+          padding: 20px;
+        }
+        .header-container {
+          display: flex;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        .user-img {
+          width: 50px;
+          height: 50px;
+          border-radius: 20px;
+          overflow: hidden;
+        }
+        .user-info {
+          margin-left: 10px;
+        }
+        .helloname {
+          font-size: 14px;
+          color: gray;
+          margin: 0;
+        }
+        .username {
+          font-size: 18px;
+          font-weight: bold;
+          color: darkslategrey;
+          margin: 0;
+        }
+        .buttons-container {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+        .view-invoices-button {
+          padding: 10px;
+          width: 48%;
+          background-color: #841584;
+          border: none;
+          border-radius: 18px;
+          color: white;
+          font-size: 16px;
+          cursor: pointer;
+        }
+        .search-input {
+          height: 40px;
+          width: 100%;
+          border: 1px solid gray;
+          margin-bottom: 12px;
+          padding: 8px;
+          border-radius: 5px;
+          box-sizing: border-box;
+        }
+        .search-button {
+          background-color: #841584;
+          padding: 10px 0;
+          border: none;
+          border-radius: 5px;
+          margin-bottom: 20px;
+          width: 100%;
+          color: white;
+          font-size: 16px;
+          cursor: pointer;
+        }
+        .invoice-item {
+          position: relative;
+          padding: 16px;
+          border-bottom: 1px solid gray;
+          background-color: #f9f9f9;
+          margin: 8px 0;
+          border-radius: 5px;
+        }
+        .invoice-text {
+          font-size: 16px;
+          margin-bottom: 8px;
+        }
+        .delete-icon {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          z-index: 1;
+          cursor: pointer;
+        }
+        .download-button {
+          background-color: darkslategrey;
+          padding: 10px;
+          border: none;
+          border-radius: 5px;
+          margin-top: 10px;
+          color: white;
+          font-size: 16px;
+          cursor: pointer;
+          width: 100%;
+        }
+      `}</style>
     </div>
   );
 };

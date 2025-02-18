@@ -91,9 +91,9 @@ const ExportData = () => {
         <Image
             src="/images/usericon.png"
             alt="User Icon"
-            width={50}
-            height={50}
-            className="rounded-full"
+            width={55}
+            height={55}
+            className="rounded-full margin-right-10"
         />
         <div className="user-text">
           <p className="helloname">Hello,</p>
@@ -217,7 +217,7 @@ const ExportData = () => {
           min-height: 100vh;
           background-color: #f8f8f8;
         }
-        .headerContainer {
+        .header {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -227,37 +227,46 @@ const ExportData = () => {
           margin-left: 20px;
           text-align: left;
         }
-        .helloname {
-          margin: 0;
-          font-size: 14px;
-        }
-        .username {
-          margin: 0;
-          font-size: 16px;
-          font-weight: bold;
-          color: darkslategrey;
-        }
         .usrimg {
-          margin-left: 3px;
+          margin-left: 20px;
           margin-top: 20px;
           width: 50px;
           height: 50px;
           border-radius: 50%;
           object-fit: cover;
         }
-        .logoutButton {
+        .user-text {
+          margin-right: 1350px;
+          padding-left: 10px;
+        }
+        .helloname {
+          margin: 0;
+          font-size: 14px;
+          margin-bottom: 0px;
+          margin-top: 0px;
+        }
+        .username {
+          margin: 0;
+          font-size: 16px;
+          font-weight: bold;
+          color: darkslategrey;
+          margin-top: 0px;
+        }
+        .logout-button {
+          position: absolute;
+          top: 20px;
+          right: 20px;
           background: none;
           border: none;
           cursor: pointer;
         }
         .logoutimg {
-          margin-top: 10px;
           width: 25px;
           height: 25px;
         }
         .separator {
-          margin: 0 15px;
-          border-bottom: 0.5px solid black;
+          margin: 25px 20px;
+          border-bottom: 1px solid #000;
         }
         .buttonledger {
           background-color: #841584;

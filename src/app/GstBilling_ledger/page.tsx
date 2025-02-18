@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import XLSX from 'xlsx';
+// import XLSX from 'xlsx';
 import { useRouter } from 'next/navigation';
 
 const GSTBillingLedger = () => {
@@ -18,20 +18,20 @@ const GSTBillingLedger = () => {
   const router = useRouter();
 
   // Export data to Excel using XLSX and trigger a file download
-  const exportToExcel = (data: any[]) => {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'LedgerData');
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ledgerData.xlsx';
-    a.click();
-    window.URL.revokeObjectURL(url);
-    window.alert("Excel File Created. The Excel file has been successfully created.");
-  };
+  // const exportToExcel = (data: any[]) => {
+  //   const ws = XLSX.utils.json_to_sheet(data);
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, 'LedgerData');
+  //   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  //   const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  //   const url = window.URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'ledgerData.xlsx';
+  //   a.click();
+  //   window.URL.revokeObjectURL(url);
+  //   window.alert("Excel File Created. The Excel file has been successfully created.");
+  // };
 
   // Export data to PDF by opening a new window with HTML and triggering print
   const exportToPDF = (data: any[]) => {
@@ -175,10 +175,10 @@ const GSTBillingLedger = () => {
             const exportChoice = window.prompt(
               'Type "pdf" to export to PDF or "excel" to export to Excel'
             );
-            if (exportChoice?.toLowerCase() === 'pdf') {
+            if (exportChoice?.toLowerCase() === 'excel') {
+              window.alert('Excel export is not supported.');
+            } else if (exportChoice?.toLowerCase() === 'pdf') {
               exportToPDF(ledgerData);
-            } else if (exportChoice?.toLowerCase() === 'excel') {
-              exportToExcel(ledgerData);
             }
           }}
         >

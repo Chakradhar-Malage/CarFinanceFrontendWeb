@@ -1,81 +1,197 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CarCurrentData from '../../components/CarCurrentData';
 import { globalState, loadGlobalState } from '../../globalState';
+import Image from "next/image";
 
 const HomeUIafterSignin = () => {
-    const router = useRouter();
-    const UserName = globalState.UserName;
-    
-    const [totalPendingAmount, setTotalPendingAmount] = useState(globalState.totalPendingAmount);
-    const [totalCount, setTotalCount] = useState(globalState.totalCount);
+  const router = useRouter();
+  const UserName = globalState.UserName;
 
-    useEffect(() => {
-        const initializeGlobalState = async () => {
-            await loadGlobalState();
-            setTotalPendingAmount(globalState.totalPendingAmount);
-            setTotalCount(globalState.totalCount);
-        };
+  const [totalPendingAmount, setTotalPendingAmount] = useState(globalState.totalPendingAmount);
+  const [totalCount, setTotalCount] = useState(globalState.totalCount);
 
-        initializeGlobalState();
-    }, []);
+  useEffect(() => {
+    const initializeGlobalState = async () => {
+      await loadGlobalState();
+      setTotalPendingAmount(globalState.totalPendingAmount);
+      setTotalCount(globalState.totalCount);
+    };
 
-    return (
-        <div className="gesture-handler-root">
-            <div className="safe-area">
-                {/* User Info Section */}
-                <Image
-                    src="/assets/images/usericon.png"
-                    width={48}
-                    height={48}
-                    className="rounded-full ml-5 mt-5"
-                    alt="User Icon"
-                />
-                <div className="flex flex-col items-start ml-2">
-                    <p className="text-sm ml-[90px] mt-[-50px]">Hello,</p>
-                </div>
-                <p className="text-lg font-bold ml-[90px] mt-[-30px] text-gray-700">{UserName}</p>
-                <button>
-                    <Image
-                        src="/assets/images/Logout.png"
-                        width={25}
-                        height={25}
-                        className="absolute right-10 top-6"
-                        alt="Logout Icon"
-                    />
-                </button>
-                <hr className="border border-gray-300 mx-6 my-6" />
-                
-                {/* Buttons Section */}
-                {[
-                    { name: 'ADD NEW VEHICLE', path: '/HomeforNewVehicle' },
-                    { name: 'EXPORT DATA', path: '/exportData' },
-                    { name: 'DELETE VEHICLE', path: '/DeleteVehicle' },
-                ].map((item, index) => (
-                    <button key={index} onClick={() => router.push(item.path)} className="flex justify-between items-center px-5 py-3 mx-5 my-2 bg-gray-100 border border-gray-300 rounded-md w-[calc(100%-40px)]">
-                        <span className="text-sm text-gray-700 overflow-hidden">{item.name}</span>
-                        <Image src="/assets/images/right-arrow.png" width={15} height={15} alt="Arrow Icon" />
-                    </button>
-                ))}
-                
-                <hr className="border border-gray-300 mx-6 my-6" />
-            </div>
+    initializeGlobalState();
+  }, []);
 
-            {/* Data Section */}
-            <div className="mb-8">
-                <CarCurrentData />
-            </div>
-
-            {/* Footer Section */}
-            <div className="safe-area">
-                <p className="ml-6 text-md">Total Vehicles : {totalCount}</p>
-                <p className="ml-6 text-md mt-1">Pending Amount : Rs.{totalPendingAmount}</p>
-            </div>
+  return (
+    <div className="container">
+      {/* User Info Section */}
+      <div className="header">
+        <Image
+            src="/images/usericon.png"
+            alt="User Icon"
+            width={50}
+            height={50}
+            className="rounded-full"
+        />
+        <div className="user-text">
+          <p className="helloname">Hello,</p>
+          <p className="username">{UserName}</p>
         </div>
-    );
+        <button className="logout-button" onClick={() => router.push('/logout')}>
+        <Image
+            src="/images/Logout.png"
+            alt="User Icon"
+            width={25}
+            height={25}
+            className="rounded-full"
+        />
+        </button>
+      </div>
+
+      <div className="separator" />
+
+      {/* Buttons Section */}
+      <div className="buttons-section">
+        <button className="nav-button" onClick={() => router.push('/HomeforNewVehicle')}>
+          <span className="buttonText">ADD NEW VEHICLE</span>
+          {/* <img className="arrowIcon" src="/assets/images/right-arrow.png" alt="Arrow" /> */}
+          <Image
+            src="/images/right-arrow.png"
+            alt="Arrow"
+            width={20}
+            height={20}
+            className="rounded-full"
+        />
+        </button>
+
+        <button className="nav-button" onClick={() => router.push('/exportData')}>
+          <span className="buttonText">EXPORT DATA</span>
+          <Image
+            src="/images/right-arrow.png"
+            alt="Arrow"
+            width={20}
+            height={20}
+            className="rounded-full"
+        />
+        </button>
+
+        <button className="nav-button" onClick={() => router.push('/DeleteVehicle')}>
+          <span className="buttonText">DELETE VEHICLE</span>
+          <Image
+            src="/images/right-arrow.png"
+            alt="Arrow"
+            width={20}
+            height={20}
+            className="rounded-full"
+        />
+        </button>
+      </div>
+
+      <div className="separator" />
+
+      {/* Data Section */}
+      <div className="data-section">
+        <CarCurrentData />
+      </div>
+
+      {/* Footer Section */}
+      <div className="footer">
+        <p>Total Vehicles : {totalCount}</p>
+        <p>Pending Amount : Rs. {totalPendingAmount}</p>
+      </div>
+
+      <style jsx>{`
+        .container {
+          padding: 20px;
+          font-family: sans-serif;
+        }
+        .header {
+          display: flex;
+          align-items: center;
+          position: relative;
+          margin-bottom: 20px;
+        }
+        .usrimg {
+          margin-left: 20px;
+          margin-top: 20px;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        .user-text {
+          margin-left: 20px;
+        }
+        .helloname {
+          margin: 0;
+          font-size: 14px;
+        }
+        .username {
+          margin: 0;
+          font-size: 16px;
+          font-weight: bold;
+          color: darkslategrey;
+        }
+        .logout-button {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          background: none;
+          border: none;
+          cursor: pointer;
+        }
+        .logoutimg {
+          width: 25px;
+          height: 25px;
+        }
+        .separator {
+          margin: 25px 20px;
+          border-bottom: 1px solid #000;
+        }
+        .buttons-section {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          margin: 0 20px;
+        }
+        .nav-button {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 20px;
+          background-color: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          cursor: pointer;
+          width: 100%;
+        }
+        .buttonText {
+          font-size: 13px;
+          color: #333;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .arrowIcon {
+          width: 15px;
+          height: 15px;
+          object-fit: contain;
+        }
+        .data-section {
+          margin-bottom: 30px;
+          padding: 0 20px;
+        }
+        .footer {
+          padding: 0 20px;
+          font-size: 16px;
+        }
+        .footer p {
+          margin: 5px 0;
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default HomeUIafterSignin;

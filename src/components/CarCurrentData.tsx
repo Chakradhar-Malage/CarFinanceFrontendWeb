@@ -51,7 +51,7 @@ const CarCurrentData = () => {
                     }}
                 >
                     <Image
-                        src="/assets/images/CardetailsComponentImg.png"
+                        src="/images/CardetailsComponentImg.png"
                         alt="Car Image"
                         width={55}
                         height={55}

@@ -1,48 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text as RNText, 
-  SafeAreaView, 
-  StyleSheet, 
-  TouchableOpacity, 
-  ScrollView, 
-  Alert 
-} from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { Text } from 'react-native-web';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const TransactionsScreen = () => {
-  const navigation = useNavigation();
-  // Retrieve the bankName passed via query parameter
-  const { bankName } = useLocalSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const bankName = searchParams.get('bankName');
 
-  // State to hold filter selection and custom dates
+  // State for filter and custom dates
   const [filter, setFilter] = useState('last7days'); // Options: last7days, lastMonth, last3Months, custom
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
-  // State to manage visibility of date pickers
-  const [isStartDatePickerVisible, setStartDatePickerVisibility] = useState(false);
-  const [isEndDatePickerVisible, setEndDatePickerVisibility] = useState(false);
-
-  // State for transactions and loading flag
+  // Transactions state and loading flag
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Function to fetch transactions from the API based on selected filter
+  // Function to fetch transactions based on the selected filter and dates
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
-      let url = `http://15.207.48.53:3000/api/transactions?bankName=${encodeURIComponent(bankName)}`;
+      let url = `http://15.207.48.53:3000/api/transactions?bankName=${encodeURIComponent(
+        bankName || ''
+      )}`;
       
       if (filter === 'custom') {
         if (!customStartDate || !customEndDate) {
-          Alert.alert('Validation Error', 'Please select both start and end dates for custom filter.');
+          window.alert(
+            'Validation Error: Please select both start and end dates for custom filter.'
+          );
           setIsLoading(false);
           return;
         }
-        url += `&filter=custom&start_date=${encodeURIComponent(customStartDate)}&end_date=${encodeURIComponent(customEndDate)}`;
+        url += `&filter=custom&start_date=${encodeURIComponent(
+          customStartDate
+        )}&end_date=${encodeURIComponent(customEndDate)}`;
       } else {
         url += `&filter=${filter}`;
       }
@@ -50,7 +43,9 @@ const TransactionsScreen = () => {
       const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json();
-        Alert.alert('Error', errorData.message || 'Something went wrong fetching transactions.');
+        window.alert(
+          errorData.message || 'Something went wrong fetching transactions.'
+        );
         setIsLoading(false);
         return;
       }
@@ -58,18 +53,19 @@ const TransactionsScreen = () => {
       setTransactions(data.transactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      Alert.alert('Error', 'Unable to fetch transactions.');
+      window.alert('Unable to fetch transactions.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch transactions when the component mounts or when filter/custom dates change
+  // Fetch transactions when the component mounts or when filter/dates change
   useEffect(() => {
-    fetchTransactions();
-  }, [filter, customStartDate, customEndDate]);
+    // Only fetch if bankName is available (from query string)
+    if (bankName) fetchTransactions();
+  }, [bankName, filter, customStartDate, customEndDate]);
 
-  // Helper function to format a Date object to YYYY-MM-DD
+  // Helper to format a Date object to YYYY-MM-DD (if needed)
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -78,143 +74,195 @@ const TransactionsScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-    <h1 style={styles.header}>Transactions for {bankName}</h1></Text>
-      
-      {/* Filter Options */}
-      <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'last7days' && styles.selectedFilter]}
-          onPress={() => setFilter('last7days')}
-        >
-          <Text style={styles.filterText}>Last 7 Days</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'lastMonth' && styles.selectedFilter]}
-          onPress={() => setFilter('lastMonth')}
-        >
-          <Text style={styles.filterText}>Last Month</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'last3Months' && styles.selectedFilter]}
-          onPress={() => setFilter('last3Months')}
-        >
-          <Text style={styles.filterText}>Last 3 Months</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'custom' && styles.selectedFilter]}
-          onPress={() => setFilter('custom')}
-        >
-          <Text style={styles.filterText}>Custom</Text>
-        </TouchableOpacity>
-      </View>
+    <div style={styles.container}>
+      <h1 style={styles.header}>
+        Transactions for {bankName || 'Unknown Bank'}
+      </h1>
 
-      {/* Custom Date Inputs with Date Pickers */}
+      {/* Filter Options */}
+      <div style={styles.filterContainer}>
+        {['last7days', 'lastMonth', 'last3Months', 'custom'].map((opt) => (
+          <button
+            key={opt}
+            style={{
+              ...styles.filterButton,
+              ...(filter === opt ? styles.selectedFilter : {}),
+            }}
+            onClick={() => setFilter(opt)}
+          >
+            {opt === 'last7days'
+              ? 'Last 7 Days'
+              : opt === 'lastMonth'
+              ? 'Last Month'
+              : opt === 'last3Months'
+              ? 'Last 3 Months'
+              : 'Custom'}
+          </button>
+        ))}
+      </div>
+
+      {/* Custom Date Inputs */}
       {filter === 'custom' && (
-        <View style={styles.customDatesContainer}>
-          <TouchableOpacity 
-            style={styles.datePickerButton} 
-            onPress={() => setStartDatePickerVisibility(true)}
-          >
-            <Text style={styles.datePickerText}>
-              {customStartDate ? customStartDate : "Select Start Date"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.datePickerButton} 
-            onPress={() => setEndDatePickerVisibility(true)}
-          >
-            <Text style={styles.datePickerText}>
-              {customEndDate ? customEndDate : "Select End Date"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <div style={styles.customDatesContainer}>
+          <div style={styles.datePickerContainer}>
+            <label style={styles.dateLabel}>Start Date:</label>
+            <input
+              type="date"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              style={styles.datePickerInput}
+            />
+          </div>
+          <div style={styles.datePickerContainer}>
+            <label style={styles.dateLabel}>End Date:</label>
+            <input
+              type="date"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              style={styles.datePickerInput}
+            />
+          </div>
+        </div>
       )}
 
       {/* Refresh Button */}
-      <TouchableOpacity style={styles.refreshButton} onPress={fetchTransactions}>
-        <Text style={styles.refreshText}>
-          {isLoading ? 'Loading...' : 'Refresh Transactions'}
-        </Text>
-      </TouchableOpacity>
+      <button style={styles.refreshButton} onClick={fetchTransactions}>
+        {isLoading ? 'Loading...' : 'Refresh Transactions'}
+      </button>
 
-      {/* Transactions Table in a Horizontally Scrollable Container */}
-      <ScrollView horizontal={true}>
-        <View style={styles.table}>
-          {/* Table Header */}
-          <View style={styles.tableHeader}>
-            <Text style={[styles.headerCell, { minWidth: 100 }]}>Date</Text>
-            <Text style={[styles.headerCell, { minWidth: 80 }]}>Type</Text>
-            <Text style={[styles.headerCell, { minWidth: 80 }]}>Amount</Text>
-            <Text style={[styles.headerCell, { minWidth: 200 }]}>Description</Text>
-          </View>
-          {/* Table Rows */}
+      {/* Transactions Table */}
+      <div style={styles.tableContainer}>
+        <div style={styles.table}>
+          <div style={styles.tableHeader}>
+            <div style={{ ...styles.headerCell, minWidth: 100 }}>Date</div>
+            <div style={{ ...styles.headerCell, minWidth: 80 }}>Type</div>
+            <div style={{ ...styles.headerCell, minWidth: 80 }}>Amount</div>
+            <div style={{ ...styles.headerCell, minWidth: 200 }}>
+              Description
+            </div>
+          </div>
           {transactions.length === 0 ? (
-            <Text style={styles.noTransactions}>No transactions available for selected period.</Text>
+            <p style={styles.noTransactions}>
+              No transactions available for selected period.
+            </p>
           ) : (
             transactions.map((tx) => (
-              <View key={tx.id} style={styles.tableRow}>
-                <Text style={[styles.cell, { minWidth: 100 }]}>{new Date(tx.transaction_date).toLocaleDateString()}</Text>
-                <Text style={[styles.cell, { minWidth: 80 }]}>{tx.transaction_type}</Text>
-                <Text style={[styles.cell, { minWidth: 80 }]}>Rs. {tx.amount}</Text>
-                <Text style={[styles.cell, { minWidth: 200 }]}>{tx.description}</Text>
-              </View>
+              <div key={tx.id} style={styles.tableRow}>
+                <div style={{ ...styles.cell, minWidth: 100 }}>
+                  {new Date(tx.transaction_date).toLocaleDateString()}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 80 }}>
+                  {tx.transaction_type}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 80 }}>
+                  Rs. {tx.amount}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 200 }}>
+                  {tx.description}
+                </div>
+              </div>
             ))
           )}
-        </View>
-      </ScrollView>
-
-      {/* Date Picker for Start Date */}
-      <DateTimePickerModal
-        isVisible={isStartDatePickerVisible}
-        mode="date"
-        onConfirm={(date) => {
-          setCustomStartDate(formatDate(date));
-          setStartDatePickerVisibility(false);
-        }}
-        onCancel={() => setStartDatePickerVisibility(false)}
-      />
-
-      {/* Date Picker for End Date */}
-      <DateTimePickerModal
-        isVisible={isEndDatePickerVisible}
-        mode="date"
-        onConfirm={(date) => {
-          setCustomEndDate(formatDate(date));
-          setEndDatePickerVisibility(false);
-        }}
-        onCancel={() => setEndDatePickerVisibility(false)}
-      />
-    </SafeAreaView>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default TransactionsScreen;
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-  filterContainer: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
-  filterButton: { padding: 10, backgroundColor: '#ccc', borderRadius: 5 },
-  selectedFilter: { backgroundColor: '#007BFF' },
-  filterText: { color: '#fff', fontWeight: 'bold' },
-  customDatesContainer: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
-  datePickerButton: { 
-    flex: 1, 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    borderRadius: 5, 
-    padding: 10, 
-    marginHorizontal: 5, 
-    alignItems: 'center' 
+const styles = {
+  container: {
+    padding: 20,
+    backgroundColor: '#fff',
+    fontFamily: 'Arial, sans-serif',
+    minHeight: '100vh',
   },
-  datePickerText: { fontSize: 16 },
-  refreshButton: { backgroundColor: '#007BFF', padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 10 },
-  refreshText: { color: '#fff', fontWeight: 'bold' },
-  table: { borderWidth: 1, borderColor: '#ddd', borderRadius: 5 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#f0f0f0', borderBottomWidth: 1, borderColor: '#ddd' },
-  headerCell: { flex: 1, padding: 10, fontWeight: 'bold', textAlign: 'center' },
-  tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderColor: '#ddd' },
-  cell: { flex: 1, padding: 10, textAlign: 'center' },
-  noTransactions: { textAlign: 'center', marginTop: 20, fontSize: 16 },
-});
+  header: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  filterContainer: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  filterButton: {
+    padding: '10px 15px',
+    backgroundColor: '#ccc',
+    border: 'none',
+    borderRadius: 5,
+    cursor: 'pointer',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  selectedFilter: {
+    backgroundColor: '#007BFF',
+  },
+  customDatesContainer: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  datePickerContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  dateLabel: {
+    marginBottom: 5,
+  },
+  datePickerInput: {
+    padding: 10,
+    borderRadius: 5,
+    border: '1px solid #ccc',
+  },
+  refreshButton: {
+    backgroundColor: '#007BFF',
+    padding: '10px 15px',
+    border: 'none',
+    borderRadius: 5,
+    cursor: 'pointer',
+    color: '#fff',
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  tableContainer: {
+    overflowX: 'auto',
+  },
+  table: {
+    minWidth: '500px',
+    border: '1px solid #ddd',
+    borderRadius: 5,
+  },
+  tableHeader: {
+    display: 'flex',
+    backgroundColor: '#f0f0f0',
+    borderBottom: '1px solid #ddd',
+  },
+  headerCell: {
+    flex: 1,
+    padding: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  tableRow: {
+    display: 'flex',
+    borderBottom: '1px solid #ddd',
+  },
+  cell: {
+    flex: 1,
+    padding: 10,
+    textAlign: 'center',
+  },
+  noTransactions: {
+    textAlign: 'center',
+    margin: 20,
+    fontSize: 16,
+  },
+};

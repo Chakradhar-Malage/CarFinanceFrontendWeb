@@ -129,7 +129,7 @@ const BankAccountDetails = () => {
       <div style={styles.headerContainer}>
         <img
           style={styles.usrimg}
-          src="/assets/images/usericon.png"
+          src="images/usericon.png"
           alt="User Icon"
         />
         <div style={styles.userInfo}>

@@ -21,7 +21,7 @@ const AddPaymentPopup = () => {
   const fetchCustomerNames = async () => {
     try {
       const response = await axios.get('http://15.207.48.53:3000/customers');
-      const customers = response.data.map((customer: any) => ({
+      const customers = (response.data as any[]).map((customer: any) => ({
         label: customer.name,
         value: customer.name,
       }));

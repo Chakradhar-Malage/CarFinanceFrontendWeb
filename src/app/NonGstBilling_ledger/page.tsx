@@ -2,15 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-// import XLSX from 'xlsx';
+// import * as XLSX from 'xlsx';
 import { useRouter } from 'next/navigation';
 
 const NonGSTBillingLedger = () => {
-  const [ledgerData, setLedgerData] = useState([]);
+  interface LedgerData {
+    Date: string;
+    InvoiceNo: string;
+    CustomerName: string;
+    ContactNumber: string;
+    Company: string;
+    PaymentStatus: string;
+    PaymentMethod: string;
+    TotalAmount: number;
+    TotalPaid: number;
+    Due: number;
+  }
+  
+  const [ledgerData, setLedgerData] = useState<LedgerData[]>([]);
   const [customerName, setCustomerName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [customerList, setCustomerList] = useState([]);
+  const [customerList, setCustomerList] = useState<{ label: string; value: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
   const [actionValue, setActionValue] = useState('');
@@ -18,24 +31,24 @@ const NonGSTBillingLedger = () => {
   const router = useRouter();
 
   // Excel export using browser Blob API
-  const exportToExcel = (ledgerData) => {
-    const ws = XLSX.utils.json_to_sheet(ledgerData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'LedgerData');
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'ledgerData.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.alert('Excel File Created');
-  };
+  // const exportToExcel = (ledgerData: any) => {
+  //   // const ws = XLSX.utils.json_to_sheet(ledgerData);
+  //   // const wb = XLSX.utils.book_new();
+  //   // XLSX.utils.book_append_sheet(wb, ws, 'LedgerData');
+  //   // const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  //   // const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  //   // const url = window.URL.createObjectURL(blob);
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = 'ledgerData.xlsx';
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  //   window.alert('Excel File Created');
+  // };
 
   // PDF export using a new window and window.print()
-  const exportToPDF = (ledgerData) => {
+  const exportToPDF = (ledgerData: any) => {
     const htmlContent = `
       <html>
         <head>
@@ -63,7 +76,7 @@ const NonGSTBillingLedger = () => {
             </tr>
             ${ledgerData
               .map(
-                (item) => `
+                (item: LedgerData) => `
               <tr>
                 <td>${item.Date || '-'}</td>
                 <td>${item.InvoiceNo || '-'}</td>
@@ -102,7 +115,7 @@ const NonGSTBillingLedger = () => {
     axios
       .get('http://15.207.48.53:3000/nongstcustomer')
       .then((response) => {
-        const customers = response.data.map((customer) => ({
+        const customers = (response.data as { name: string }[]).map((customer: { name: string }) => ({
           label: customer.name,
           value: customer.name,
         }));
@@ -126,8 +139,10 @@ const NonGSTBillingLedger = () => {
       .get(query)
       .then((response) => {
         // Only update if data changed
+        setLedgerData(response.data as LedgerData[]);
+        // Only update if data changed
         if (JSON.stringify(response.data) !== JSON.stringify(ledgerData)) {
-          setLedgerData(response.data);
+          setLedgerData(response.data as LedgerData[]);
         }
       })
       .catch((error) =>
@@ -136,7 +151,7 @@ const NonGSTBillingLedger = () => {
   };
 
   // Handle action (payment status) selection from dropdown
-  const handleActionSelect = (action) => {
+  const handleActionSelect = (action: string) => {
     let newFilter = '';
     if (action === 'Due payments') {
       newFilter = 'Due';
@@ -149,7 +164,6 @@ const NonGSTBillingLedger = () => {
       setPaymentStatusFilter(newFilter);
     }
   };
-
   useEffect(() => {
     fetchCustomerNames();
     // Optionally, you could fetch ledger data on mount here if needed.
@@ -157,13 +171,13 @@ const NonGSTBillingLedger = () => {
   }, []);
 
   // Render a ledger row as a table row
-  const renderRow = (item, index) => (
+  const renderRow = (item: LedgerData, index: number) => (
     <tr key={index}>
-      <td style={styles.cell}>{item.Date || '-'}</td>
+      <td style={{ ...styles.cell, textAlign: 'center' }}>{item.Date || '-'}</td>
       <td style={{ ...styles.cell, minWidth: 70, maxWidth: 70 }}>
         {item.InvoiceNo || '-'}
       </td>
-      <td style={{ ...styles.cell, minWidth: 180, maxWidth: 180 }}>
+      <td style={{ ...styles.cell, minWidth: 180, maxWidth: 180, textAlign: 'center' as 'center' }}>
         {item.CustomerName || '-'}
       </td>
       <td style={{ ...styles.cell, minWidth: 101, maxWidth: 120 }}>
@@ -225,7 +239,7 @@ const NonGSTBillingLedger = () => {
               'Enter export format: "excel" or "pdf" (or cancel)'
             );
             if (choice?.toLowerCase() === 'excel') {
-              exportToExcel(ledgerData);
+              window.alert('Excel export is not supported.');
             } else if (choice?.toLowerCase() === 'pdf') {
               exportToPDF(ledgerData);
             }
@@ -312,28 +326,28 @@ const NonGSTBillingLedger = () => {
         <table style={styles.table}>
           <thead>
             <tr style={{ ...styles.row, ...styles.headerRow }}>
-              <th style={{ ...styles.headerCell, width: 143 }}>Date</th>
-              <th style={{ ...styles.headerCell, width: 70 }}>Invoice No</th>
-              <th style={{ ...styles.headerCell, width: 180 }}>
+              <th style={{ ...styles.headerCell, width: 143, textAlign: 'center' }}>Date</th>
+              <th style={{ ...styles.headerCell, width: 70, textAlign: 'center' }}>Invoice No</th>
+              <th style={{ ...styles.headerCell, width: 180, textAlign: 'center' }}>
                 Customer Name
               </th>
-              <th style={{ ...styles.headerCell, width: 120 }}>
+              <th style={{ ...styles.headerCell, width: 120, textAlign: 'center' }}>
                 Contact No
               </th>
-              <th style={{ ...styles.headerCell, width: 151 }}>Company</th>
-              <th style={{ ...styles.headerCell, width: 151 }}>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>Company</th>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>
                 Payment Status
               </th>
-              <th style={{ ...styles.headerCell, width: 151 }}>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>
                 Payment Method
               </th>
-              <th style={{ ...styles.headerCell, width: 151 }}>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>
                 Total Amount
               </th>
-              <th style={{ ...styles.headerCell, width: 151 }}>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>
                 Total Paid
               </th>
-              <th style={{ ...styles.headerCell, width: 151 }}>Due</th>
+              <th style={{ ...styles.headerCell, width: 151, textAlign: 'center' }}>Due</th>
             </tr>
           </thead>
           <tbody>{ledgerData.map((item, index) => renderRow(item, index))}</tbody>
@@ -428,7 +442,7 @@ const styles = {
     cursor: 'pointer',
   },
   table: {
-    borderCollapse: 'collapse',
+    borderCollapse: 'collapse' as 'collapse',
     width: '100%',
   },
   row: {
@@ -439,9 +453,9 @@ const styles = {
   },
   cell: {
     padding: '10px',
-    textAlign: 'center',
+    textAlign: 'center' as 'center',
     border: '1px solid #ccc',
-    wordWrap: 'break-word',
+    wordWrap: 'break-word' as 'break-word',
   },
   headerCell: {
     fontWeight: 'bold',

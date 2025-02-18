@@ -71,7 +71,7 @@ const ViewGeneratorQuotationInvoices = () => {
 
       <p className="font-bold mb-4">Generator Quotations</p>
 
-      <button onClick={() => router.push("/generate-generator-quotation")} className="bg-purple-700 text-white px-4 py-2 rounded-lg mb-6">
+      <button onClick={() => router.push("/generateGeneratorQuotation")} className="bg-purple-700 text-white px-4 py-2 rounded-lg mb-6">
         New Quotation
       </button>
 

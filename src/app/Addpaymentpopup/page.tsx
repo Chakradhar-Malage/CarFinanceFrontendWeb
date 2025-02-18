@@ -75,7 +75,7 @@ const AddPaymentPopup = () => {
                     />
 
                     <TextInput
-                        className="w-full p-2 border border-gray-300 rounded mb-4"
+                        style={{ width: '100%', padding: 8, borderColor: 'gray', borderWidth: 1, borderRadius: 4, marginBottom: 16 }}
                         placeholder="Payment Amount"
                         keyboardType="numeric"
                         value={paymentAmount}

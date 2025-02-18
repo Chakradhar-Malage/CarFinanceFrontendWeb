@@ -90,7 +90,7 @@ const ViewInvoices = () => {
       </div>
 
       <div className="flex space-x-4 mb-6">
-        <button onClick={() => router.push("/generate-invoice")} className="bg-purple-700 text-white px-4 py-2 rounded-lg">
+        <button onClick={() => router.push("/GenerateInvoice")} className="bg-purple-700 text-white px-4 py-2 rounded-lg">
           New Invoice
         </button>
         <button onClick={() => router.push("/GstBilling_ledger")} className="bg-purple-700 text-white px-4 py-2 rounded-lg">

@@ -5,8 +5,8 @@ import DropDown from 'react-dropdown-select';
 import axios from 'axios';
 
 const NonAddPaymentPopup = () => {
-    const [customerList, setCustomerList] = useState([]);
-    const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [customerList, setCustomerList] = useState<{ label: string, value: string }[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
     const [paymentAmount, setPaymentAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [error, setError] = useState('');
@@ -18,7 +18,7 @@ const NonAddPaymentPopup = () => {
     const fetchCustomerNames = async () => {
         try {
             const response = await axios.get('http://15.207.48.53:3000/nongstcustomer');
-            const customers = response.data.map(customer => ({
+            const customers = (response.data as { name: string }[]).map(customer => ({
                 label: customer.name,
                 value: customer.name
             }));
@@ -50,7 +50,7 @@ const NonAddPaymentPopup = () => {
     };
 
     const clearForm = () => {
-        setSelectedCustomer(null);
+        setSelectedCustomer('');
         setPaymentAmount('');
         setPaymentMethod('cash');
         setError('');
@@ -63,7 +63,8 @@ const NonAddPaymentPopup = () => {
 
                 <DropDown
                     options={customerList}
-                    onChange={(values) => setSelectedCustomer(values[0]?.value)}
+                    values={customerList.filter(customer => customer.value === selectedCustomer)}
+                    onChange={(values: { label: string, value: string }[]) => setSelectedCustomer(values[0]?.value)}
                     placeholder="Select Customer"
                     className="w-full border p-2 rounded mb-3"
                 />

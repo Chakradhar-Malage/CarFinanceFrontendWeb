@@ -26,7 +26,7 @@ const GenerateNonGSTInvoice = () => {
   useEffect(() => {
     axios
       .get("http://15.207.48.53:3000/nongstcustomer")
-      .then((response) => setCustomersList(response.data))
+      .then((response) => setCustomersList(response.data as any[]))
       .catch((error) => console.error("Error fetching customers:", error));
   }, []);
 

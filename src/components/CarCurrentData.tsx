@@ -6,21 +6,27 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { globalState, saveGlobalState } from '../globalState';
 
+interface CarDataResponse {
+  data: any[];
+  totalPendingAmount: number;
+  totalCount: number;
+}
+
 const CarCurrentData = () => {
-  const [carData, setCarData] = useState([]);
+      const [carData, setCarData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const fetchCarData = async () => {
     try {
-      const response = await axios.get('http://15.207.48.53:3000/allentries');
+      const response = await axios.get<CarDataResponse>('http://15.207.48.53:3000/allentries');
       const { data, totalPendingAmount, totalCount } = response.data;
       setCarData(data);
       globalState.totalPendingAmount = totalPendingAmount;
       globalState.totalCount = totalCount;
       saveGlobalState();
     } catch (error) {
-      console.error('Error fetching car details:', error.message);
+      console.error('Error fetching car details:', (error as any).message);
       alert('Failed to load car data');
     } finally {
       setLoading(false);

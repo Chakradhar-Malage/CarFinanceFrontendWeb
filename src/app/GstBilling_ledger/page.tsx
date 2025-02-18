@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import XLSX from 'xlsx';
+import XLSX from 'xlsx';
 import { useRouter } from 'next/navigation';
 
 const GSTBillingLedger = () => {
@@ -99,7 +99,7 @@ const GSTBillingLedger = () => {
     axios
       .get('http://15.207.48.53:3000/customers')
       .then((response) => {
-        const customers = response.data.map((customer: any) => ({
+        const customers = (response.data as any[]).map((customer: any) => ({
           label: customer.name,
           value: customer.name,
         }));
@@ -120,7 +120,7 @@ const GSTBillingLedger = () => {
       .then((response) => {
         // Update state only if data has changed
         if (JSON.stringify(response.data) !== JSON.stringify(ledgerData)) {
-          setLedgerData(response.data);
+          setLedgerData(response.data as any[]);
         }
       })
       .catch((error) => {

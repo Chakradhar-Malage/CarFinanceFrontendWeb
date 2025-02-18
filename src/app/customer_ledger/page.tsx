@@ -4,12 +4,18 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 const CustomerLedger = () => {
-  const [ledgerData, setLedgerData] = useState([]);
+  interface LedgerItem {
+    customer_name: string;
+    balance: number;
+    transaction_date: string;
+  }
+
+  const [ledgerData, setLedgerData] = useState<LedgerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [transactionType, setTransactionType] = useState('credit');
-  const [modifyAmounts, setModifyAmounts] = useState([]);
-  const [selectedCustomerIndex, setSelectedCustomerIndex] = useState(null);
+  const [modifyAmounts, setModifyAmounts] = useState<string[]>([]);
+  const [selectedCustomerIndex, setSelectedCustomerIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchLedgerData = async () => {
@@ -19,7 +25,7 @@ const CustomerLedger = () => {
 
         if (response.ok) {
           setLedgerData(result);
-          setModifyAmounts(new Array(result.length).fill(''));
+          setModifyAmounts(new Array<string>(result.length).fill(''));
         } else {
           setError(result.message || 'Failed to fetch ledger data');
         }

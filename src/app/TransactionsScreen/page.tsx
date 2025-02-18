@@ -14,7 +14,15 @@ const TransactionsScreen = () => {
   const [customEndDate, setCustomEndDate] = useState('');
 
   // Transactions state and loading flag
-  const [transactions, setTransactions] = useState([]);
+  interface Transaction {
+    id: string;
+    transaction_date: string;
+    transaction_type: string;
+    amount: number;
+    description: string;
+  }
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Function to fetch transactions based on the selected filter and dates
@@ -66,7 +74,7 @@ const TransactionsScreen = () => {
   }, [bankName, filter, customStartDate, customEndDate]);
 
   // Helper to format a Date object to YYYY-MM-DD (if needed)
-  const formatDate = (date) => {
+  const formatDate = (date: Date) => {
     const year = date.getFullYear();
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
@@ -142,22 +150,22 @@ const TransactionsScreen = () => {
             </div>
           </div>
           {transactions.length === 0 ? (
-            <p style={styles.noTransactions}>
+            <p style={{ ...styles.noTransactions, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
               No transactions available for selected period.
             </p>
           ) : (
             transactions.map((tx) => (
               <div key={tx.id} style={styles.tableRow}>
-                <div style={{ ...styles.cell, minWidth: 100 }}>
+                <div style={{ ...styles.cell, minWidth: 100, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
                   {new Date(tx.transaction_date).toLocaleDateString()}
                 </div>
-                <div style={{ ...styles.cell, minWidth: 80 }}>
+                <div style={{ ...styles.cell, minWidth: 80, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
                   {tx.transaction_type}
                 </div>
-                <div style={{ ...styles.cell, minWidth: 80 }}>
+                <div style={{ ...styles.cell, minWidth: 80, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
                   Rs. {tx.amount}
                 </div>
-                <div style={{ ...styles.cell, minWidth: 200 }}>
+                <div style={{ ...styles.cell, minWidth: 200, textAlign: 'center' as React.CSSProperties['textAlign'] }}>
                   {tx.description}
                 </div>
               </div>
@@ -187,7 +195,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-around',
     marginBottom: 10,
-    flexWrap: 'wrap',
+    flexWrap: 'wrap' as 'wrap',
     gap: '10px',
   },
   filterButton: {
@@ -206,12 +214,12 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-around',
     marginBottom: 10,
-    flexWrap: 'wrap',
+    flexWrap: 'wrap' as 'wrap',
     gap: '10px',
   },
   datePickerContainer: {
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column' as 'column',
     alignItems: 'center',
   },
   dateLabel: {
@@ -233,7 +241,7 @@ const styles = {
     marginBottom: 20,
   },
   tableContainer: {
-    overflowX: 'auto',
+    overflowX: 'auto' as 'auto',
   },
   table: {
     minWidth: '500px',
@@ -249,7 +257,7 @@ const styles = {
     flex: 1,
     padding: 10,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'center' as React.CSSProperties['textAlign'],
   },
   tableRow: {
     display: 'flex',
@@ -261,7 +269,7 @@ const styles = {
     textAlign: 'center',
   },
   noTransactions: {
-    textAlign: 'center',
+    textAlign: 'center' as React.CSSProperties['textAlign'],
     margin: 20,
     fontSize: 16,
   },

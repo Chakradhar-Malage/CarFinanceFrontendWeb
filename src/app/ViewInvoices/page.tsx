@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FaTrash } from "react-icons/fa";
 
+interface Invoice {
+  customer_name: string;
+  created_at: string;
+}
+
 const ViewInvoices = () => {
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [searchName, setSearchName] = useState("");
-  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,8 +24,8 @@ const ViewInvoices = () => {
   const fetchInvoices = async () => {
     try {
       const response = await axios.get("http://15.207.48.53:3000/allinvoices");
-      setInvoices(response.data);
-      setFilteredInvoices(response.data);
+      setInvoices(response.data as Invoice[]);
+      setFilteredInvoices(response.data as Invoice[]);
     } catch (error) {
       console.error("Error fetching invoices:", error);
     }
@@ -35,18 +40,18 @@ const ViewInvoices = () => {
       const response = await axios.get(
         `http://15.207.48.53:3000/invoices/customer/${searchName}`
       );
-      setFilteredInvoices(response.data);
+      setFilteredInvoices(response.data as Invoice[]);
     } catch (error) {
       console.error("Error searching invoices:", error);
       alert("No invoices found for this customer.");
     }
   };
 
-  const formatDateForUrl = (dateString) => {
+  const formatDateForUrl = (dateString: string) => {
     return new Date(dateString).toISOString().replace("T", " ").slice(0, 19);
   };
 
-  const openInBrowser = (customerName, createdAt) => {
+  const openInBrowser = (customerName: string, createdAt: string) => {
     const formattedDate = encodeURIComponent(formatDateForUrl(createdAt));
     window.open(
       `http://15.207.48.53:3000/invoices/${customerName}/${formattedDate}/download`,
@@ -54,7 +59,7 @@ const ViewInvoices = () => {
     );
   };
 
-  const deleteInvoice = async (customerName, createdAt) => {
+  const deleteInvoice = async (customerName: string, createdAt: string) => {
     const formattedDate = encodeURIComponent(formatDateForUrl(createdAt));
     try {
       await axios.delete(

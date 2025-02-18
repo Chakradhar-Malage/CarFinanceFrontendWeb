@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 const ViewGeneratorQuotationInvoices = () => {
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [searchName, setSearchName] = useState("");
-  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,8 +18,8 @@ const ViewGeneratorQuotationInvoices = () => {
   const fetchInvoices = async () => {
     try {
       const response = await axios.get("http://15.207.48.53:3000/allgeneratorquotations");
-      setInvoices(response.data);
-      setFilteredInvoices(response.data);
+      setInvoices(response.data as any[]);
+      setFilteredInvoices(response.data as any[]);
     } catch (error) {
       console.error("Error fetching invoices:", error);
     }
@@ -34,18 +34,18 @@ const ViewGeneratorQuotationInvoices = () => {
       const response = await axios.get(
         `http://15.207.48.53:3000/generator-quotations/customer/${searchName}`
       );
-      setFilteredInvoices(response.data);
+      setFilteredInvoices(response.data as any[]);
     } catch (error) {
       console.error("Error searching invoices:", error);
       alert("No invoices found for this customer.");
     }
   };
 
-  const formatDateForUrl = (dateString) => {
+  const formatDateForUrl = (dateString: string) => {
     return new Date(dateString).toISOString().replace("T", " ").slice(0, 19);
   };
 
-  const openInBrowser = (customerName, createdAt) => {
+  const openInBrowser = (customerName: string, createdAt: string) => {
     const formattedDate = encodeURIComponent(formatDateForUrl(createdAt));
     window.open(
       `http://15.207.48.53:3000/generator-quotations/${customerName}/${formattedDate}/download`,

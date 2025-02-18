@@ -47,8 +47,8 @@ const ViewNonGSTInvoices = () => {
   const fetchInvoices = async () => {
     try {
       const response = await axios.get('http://15.207.48.53:3000/allnongstinvoices');
-      setInvoices(response.data);
-      setFilteredInvoices(response.data);
+      setInvoices(response.data as any[]);
+      setFilteredInvoices(response.data as any[]);
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }
@@ -63,7 +63,7 @@ const ViewNonGSTInvoices = () => {
       const response = await axios.get(
         `http://15.207.48.53:3000/nongstinvoices/customer/${searchName}`
       );
-      setFilteredInvoices(response.data);
+      setFilteredInvoices(response.data as any[]);
     } catch (error) {
       console.error('Error searching invoices:', error);
       window.alert('No invoices found for this customer.');

@@ -6,9 +6,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 const ViewQuotations = () => {
-  const [quotations, setQuotations] = useState([]);
+  interface Quotation {
+    customer_name: string;
+    created_at: string;
+    // Add other fields as necessary
+  }
+
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [searchName, setSearchName] = useState("");
-  const [filteredQuotations, setFilteredQuotations] = useState([]);
+  const [filteredQuotations, setFilteredQuotations] = useState<Quotation[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -18,8 +24,8 @@ const ViewQuotations = () => {
   const fetchQuotations = async () => {
     try {
       const response = await axios.get("http://15.207.48.53:3000/allquotations");
-      setQuotations(response.data);
-      setFilteredQuotations(response.data);
+      setQuotations(response.data as Quotation[]);
+      setFilteredQuotations(response.data as Quotation[]);
     } catch (error) {
       console.error("Error fetching quotations:", error);
     }
@@ -34,18 +40,18 @@ const ViewQuotations = () => {
       const response = await axios.get(
         `http://15.207.48.53:3000/quotations/customer/${searchName}`
       );
-      setFilteredQuotations(response.data);
+      setFilteredQuotations(response.data as Quotation[]);
     } catch (error) {
       console.error("Error searching quotations:", error);
       alert("No quotations found for this customer.");
     }
   };
 
-  const formatDateForUrl = (dateString) => {
+  const formatDateForUrl = (dateString: string) => {
     return new Date(dateString).toISOString().replace("T", " ").slice(0, 19);
   };
 
-  const openInBrowser = (customerName, createdAt) => {
+  const openInBrowser = (customerName: string, createdAt: string) => {
     const formattedDate = encodeURIComponent(formatDateForUrl(createdAt));
     const encodedCustomerName = encodeURIComponent(customerName);
     window.open(

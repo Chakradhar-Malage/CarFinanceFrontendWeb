@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 "use client"; // Ensures it's a client-side component in Next.js
 
 import { useState, useEffect } from "react";

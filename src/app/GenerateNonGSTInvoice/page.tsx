@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 "use client"; // Ensures it runs in the browser
 
 import { useState, useEffect } from "react";

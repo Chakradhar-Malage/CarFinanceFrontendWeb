@@ -12,7 +12,12 @@ const BankAccountDetails = () => {
   const UserName = globalState.UserName;
 
   // State to hold account details (fetched from API)
-  const [account, setAccount] = useState(null);
+  interface Account {
+    name: string;
+    current_balance: number;
+  }
+
+  const [account, setAccount] = useState<Account | null>(null);
 
   // States for transaction form
   const [showTransactionForm, setShowTransactionForm] = useState(false);
@@ -75,7 +80,7 @@ const BankAccountDetails = () => {
 
   // Submit a transaction and refresh account data afterward
   const handleSubmitTransaction = async () => {
-    if (!amount || isNaN(amount)) {
+    if (!amount || isNaN(Number(amount))) {
       window.alert('Validation Error: Please enter a valid amount');
       return;
     }
@@ -215,7 +220,9 @@ const BankAccountDetails = () => {
 
 export default BankAccountDetails;
 
-const styles = {
+import { CSSProperties } from 'react';
+
+const styles: { [key: string]: CSSProperties } = {
   container: { backgroundColor: '#fff', fontFamily: 'Arial, sans-serif', minHeight: '100vh' },
   headerContainer: { display: 'flex', alignItems: 'center', padding: 20 },
   usrimg: { width: 50, height: 50, borderRadius: '50%' },
@@ -230,7 +237,7 @@ const styles = {
     padding: 15,
     borderRadius: 5,
     backgroundColor: '#f0f0f0',
-    textAlign: 'center',
+    textAlign: 'center' as 'center',
   },
   selectedBankText: { fontSize: 18, fontWeight: 'bold', color: '#333', margin: 0 },
   balanceText: { fontSize: 16, marginTop: 5, color: 'green' },

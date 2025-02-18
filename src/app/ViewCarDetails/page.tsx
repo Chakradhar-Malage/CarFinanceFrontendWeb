@@ -7,8 +7,19 @@ import moment from 'moment';
 import { globalState } from '../../globalState';
 import Image from "next/image";
 
+interface VehicleDetails {
+  name_of_vehicle: string;
+  agreed_amount: number;
+  received_amount: number;
+  issued_to: string;
+  fuel_expense: number;
+  maintenance: number;
+  driver_expense: number;
+  date: string;
+}
+
 const ViewCarDetails = () => {
-  const [vehicleDetails, setVehicleDetails] = useState(null); // Store vehicle details
+  const [vehicleDetails, setVehicleDetails] = useState<VehicleDetails | null>(null); // Store vehicle details
   const [loading, setLoading] = useState(true);
   const UserName = globalState.UserName;
   const router = useRouter();
@@ -45,13 +56,13 @@ const ViewCarDetails = () => {
           setIssuedTo(data[0].issued_to);
           setReceivedAmount(data[0].received_amount);
           setDate(data[0].date);
-          setDriverExpense(data[0].driver_expense);
-          setFuelExpense(data[0].fuel_expense);
-          setMaintenance(data[0].maintenance);
+          setDriverExpense(data[0].driver_expense.toString());
+          setFuelExpense(data[0].fuel_expense.toString());
+          setMaintenance(data[0].maintenance.toString());
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        window.alert('Error fetching data: ' + error.message);
+        window.alert('Error fetching data: ' + (error as Error).message);
       } finally {
         setLoading(false);
       }
@@ -62,7 +73,15 @@ const ViewCarDetails = () => {
 
   const saveCarDetails = async () => {
     try {
-      const updatedCarDetails = {};
+      const updatedCarDetails: {
+        agreed_amount?: number;
+        received_amount?: number;
+        fuel_expense?: number;
+        maintenance?: number;
+        driver_expense?: number;
+        issued_to?: string;
+        date?: string;
+      } = {};
 
       if (agreed_amount !== undefined) {
         updatedCarDetails.agreed_amount = parseInt(agreed_amount);
@@ -98,7 +117,7 @@ const ViewCarDetails = () => {
         window.alert('Failed to update car details.');
       }
     } catch (error) {
-      console.error('Error updating car details:', error.response?.data || error.message);
+      console.error('Error updating car details:', (error as any).response?.data || (error as any).message);
       window.alert('An error occurred while updating car details.');
     }
   };
@@ -132,24 +151,24 @@ const ViewCarDetails = () => {
         window.alert('Details saved successfully.');
         // Reset the fields
         setIssuedTo('N/A');
-        setAgreedAmount(0);
-        setReceivedAmount(0);
-        setFuelExpense(0);
-        setMaintenance(0);
-        setDriverExpense(0);
+        setAgreedAmount('0');
+        setReceivedAmount('0');
+        setFuelExpense('0');
+        setMaintenance('0');
+        setDriverExpense('0');
       } else {
         window.alert('Failed to save details.');
       }
     } catch (error) {
-      console.error('Error saving cleared details:', error.response?.data || error.message);
+      console.error('Error saving cleared details:', (error as any).response?.data || (error as any).message);
       window.alert('Vehicle is already cleared.');
     }
   };
 
   const calculatePendingAmount = () => {
-    const agreed = agreed_amount || (vehicleDetails ? vehicleDetails.agreed_amount : 0);
-    const received = received_amount || (vehicleDetails ? vehicleDetails.received_amount : 0);
-    return agreed - received;
+    const agreed = agreed_amount || (vehicleDetails ? vehicleDetails.agreed_amount.toString() : '0');
+    const received = received_amount || (vehicleDetails ? vehicleDetails.received_amount.toString() : '0');
+    return parseInt(agreed, 10) - parseInt(received, 10);
   };
 
   const handlePendingAmount = async () => {
@@ -169,19 +188,22 @@ const ViewCarDetails = () => {
           await clearAndSaveDetails();
           // Resetting state values
           setIssuedTo('N/A');
-          setAgreedAmount(0);
-          setReceivedAmount(0);
-          setFuelExpense(0);
-          setMaintenance(0);
-          setDriverExpense(0);
+          setAgreedAmount('0');
+          setReceivedAmount('0');
+          setFuelExpense('0');
+          setMaintenance('0');
+            setDriverExpense('0');
+            setFuelExpense('0');
+            setMaintenance('0');
         } else {
-          window.alert('Failed to process pending amount: ' + response.data.message);
+          const errorMessage = (response.data as { message: string }).message;
+          window.alert('Failed to process pending amount: ' + errorMessage);
         }
       } catch (error) {
-        console.error('Error processing pending amount:', error.response?.data || error.message);
+        console.error('Error processing pending amount:', (error as any).response?.data || (error as any).message);
         window.alert(
           'An error occurred while processing pending amount: ' +
-            (error.response?.data.message || error.message)
+            ((error as any).response?.data.message || (error as any).message)
         );
       }
     } else {
@@ -261,8 +283,8 @@ const ViewCarDetails = () => {
         <p style={styles.innertextbelowHeadings}>Vehicle Number :<br /></p>
         <input
           style={styles.input}
-          value={vehicleId}
-          placeholder={vehicleId}
+          value={vehicleId || ''}
+          placeholder={vehicleId || ''}
           readOnly
         />
 
@@ -488,7 +510,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     width: 150,
     marginTop: 5,
     margin: '0 auto',

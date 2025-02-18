@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+// import { AxiosError } from "axios";
 
 const GenerateInvoice = () => {
   const [isNewCustomer, setIsNewCustomer] = useState(true);
@@ -11,21 +12,30 @@ const GenerateInvoice = () => {
     address: "",
     gstin: "",
   });
-  const [customersList, setCustomersList] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [products, setProducts] = useState([]);
+  interface Customer {
+    name: string;
+    mobile: string;
+    address: string;
+    gstin: string;
+  }
+  
+  const [customersList, setCustomersList] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState([
+    { name: "", quantity: "", rate: "", gst: "18", hsn: "998717" },
+  ]);
 
   useEffect(() => {
     axios
       .get("http://15.207.48.53:3000/customers")
       .then((response) => {
-        setCustomersList(response.data);
+        setCustomersList(response.data as Customer[]);
       })
       .catch((error) => console.error("Error fetching customers:", error));
   }, []);
 
-  const handleCustomerChange = (key, value) => {
+  const handleCustomerChange = (key: string, value: string) => {
     setCustomerDetails({ ...customerDetails, [key]: value });
   };
 
@@ -50,7 +60,7 @@ const GenerateInvoice = () => {
     ]);
   };
 
-  const deleteProduct = (index) => {
+  const deleteProduct = (index: number) => {
     const updatedProducts = [...products];
     updatedProducts.splice(index, 1);
     setProducts(updatedProducts);
@@ -76,7 +86,15 @@ const GenerateInvoice = () => {
         window.alert("Invoice generated successfully!");
       }
     } catch (error) {
-      console.error("Error generating invoice:", error.response || error);
+      if (error) {
+        // if (error instanceof AxiosError) {
+          // console.error("Error generating invoice:", error.response || error.message);
+        // } else {
+          console.error("Error generating invoice:", error);
+        // }
+      } else {
+        console.error("Error generating invoice:", error);
+      }
       window.alert("Failed to generate invoice.");
     }
   };
@@ -99,7 +117,7 @@ const GenerateInvoice = () => {
             <div key={index} style={{ marginBottom: 10 }}>
               <label>{`Customer ${field.charAt(0).toUpperCase() + field.slice(1)}`}</label>
               <input
-                value={customerDetails[field]}
+                value={customerDetails[field as keyof typeof customerDetails]}
                 onChange={(e) => handleCustomerChange(field, e.target.value)}
                 style={{ width: "100%", marginBottom: 5 }}
                 type={field === "mobile" ? "number" : "text"}
@@ -128,7 +146,7 @@ const GenerateInvoice = () => {
                 <div key={index} style={{ marginBottom: 10 }}>
                   <label>{`Customer ${field.charAt(0).toUpperCase() + field.slice(1)}`}</label>
                   <input
-                    value={customerDetails[field]}
+                    value={customerDetails[field as keyof typeof customerDetails]}
                     onChange={(e) => handleCustomerChange(field, e.target.value)}
                     style={{ width: "100%", marginBottom: 5 }}
                     type="text"

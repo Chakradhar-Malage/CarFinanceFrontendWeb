@@ -1,0 +1,21 @@
+{
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 5203,
+    "files": [
+      "static/chunks/203.2b4c1ee4fbe3a7cf.js"
+    ]
+  },
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 6218,
+    "files": [
+      "static/chunks/218.57a830a2c55ba802.js"
+    ]
+  },
+  "app\\Addpaymentpopup\\page.tsx -> react-select": {
+    "id": 119,
+    "files": [
+      "static/chunks/81-04ff396ca09b9bd0.js",
+      "static/chunks/119.1f6c139cc6f5d238.js"
+    ]
+  }
+}

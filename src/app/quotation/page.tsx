@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 
 "use client";
@@ -8,31 +8,33 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-const ViewQuotations = () => {
-  interface Quotation {
-    customer_name: string;
-    created_at: string;
-    // Add other fields as necessary
-  }
+interface Quotation {
+  customer_name: string;
+  created_at: string;
+  // Add other fields as necessary
+}
 
+export default function ViewQuotations() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [searchName, setSearchName] = useState("");
   const [filteredQuotations, setFilteredQuotations] = useState<Quotation[]>([]);
   const router = useRouter();
 
   useEffect(() => {
+    const fetchQuotations = async () => {
+      try {
+        const response = await axios.get(
+          "http://15.207.48.53:3000/allquotations"
+        );
+        setQuotations(response.data as Quotation[]);
+        setFilteredQuotations(response.data as Quotation[]);
+      } catch (error) {
+        console.error("Error fetching quotations:", error);
+      }
+    };
+
     fetchQuotations();
   }, []);
-
-  const fetchQuotations = async () => {
-    try {
-      const response = await axios.get("http://15.207.48.53:3000/allquotations");
-      setQuotations(response.data as Quotation[]);
-      setFilteredQuotations(response.data as Quotation[]);
-    } catch (error) {
-      console.error("Error fetching quotations:", error);
-    }
-  };
 
   const searchByCustomer = async () => {
     if (!searchName) {
@@ -79,7 +81,10 @@ const ViewQuotations = () => {
         </div>
       </div>
 
-      <button onClick={() => router.push("/generateQuotation")} className="bg-purple-700 text-white px-4 py-2 rounded-lg mb-6">
+      <button
+        onClick={() => router.push("/generateQuotation")}
+        className="bg-purple-700 text-white px-4 py-2 rounded-lg mb-6"
+      >
         New Quotation
       </button>
 
@@ -91,7 +96,10 @@ const ViewQuotations = () => {
           onChange={(e) => setSearchName(e.target.value)}
           className="border p-2 rounded w-full"
         />
-        <button onClick={searchByCustomer} className="bg-purple-700 text-white px-4 py-2 rounded-lg">
+        <button
+          onClick={searchByCustomer}
+          className="bg-purple-700 text-white px-4 py-2 rounded-lg"
+        >
           Search
         </button>
       </div>
@@ -99,10 +107,16 @@ const ViewQuotations = () => {
       <div>
         {filteredQuotations.map((quotation, index) => (
           <div key={index} className="p-4 border rounded-lg bg-gray-100 mb-4">
-            <p className="text-lg font-semibold">Customer: {quotation.customer_name}</p>
-            <p className="text-gray-600">{new Date(quotation.created_at).toLocaleString()}</p>
+            <p className="text-lg font-semibold">
+              Customer: {quotation.customer_name}
+            </p>
+            <p className="text-gray-600">
+              {new Date(quotation.created_at).toLocaleString()}
+            </p>
             <button
-              onClick={() => openInBrowser(quotation.customer_name, quotation.created_at)}
+              onClick={() =>
+                openInBrowser(quotation.customer_name, quotation.created_at)
+              }
               className="bg-gray-800 text-white px-4 py-2 rounded-lg mt-3"
             >
               Download
@@ -112,6 +126,5 @@ const ViewQuotations = () => {
       </div>
     </div>
   );
-};
+}
 
-export default ViewQuotations;

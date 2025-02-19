@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+/* eslint-disable @typescript-eslint/prefer-as-const */
 
 'use client';
 
@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import moment from 'moment';
 import { globalState } from '../../globalState';
-import Image from "next/image";
+import Image from 'next/image';
 
 interface VehicleDetails {
   name_of_vehicle: string;
@@ -55,9 +55,9 @@ const ViewCarDetails = () => {
           window.alert('No details found for this vehicle');
         } else {
           setVehicleDetails(data[0]);
-          setAgreedAmount(data[0].agreed_amount);
+          setAgreedAmount(data[0].agreed_amount.toString());
           setIssuedTo(data[0].issued_to);
-          setReceivedAmount(data[0].received_amount);
+          setReceivedAmount(data[0].received_amount.toString());
           setDate(data[0].date);
           setDriverExpense(data[0].driver_expense.toString());
           setFuelExpense(data[0].fuel_expense.toString());
@@ -120,7 +120,10 @@ const ViewCarDetails = () => {
         window.alert('Failed to update car details.');
       }
     } catch (error) {
-      console.error('Error updating car details:', (error as any).response?.data || (error as any).message);
+      console.error(
+        'Error updating car details:',
+        (error as any).response?.data || (error as any).message
+      );
       window.alert('An error occurred while updating car details.');
     }
   };
@@ -163,14 +166,21 @@ const ViewCarDetails = () => {
         window.alert('Failed to save details.');
       }
     } catch (error) {
-      console.error('Error saving cleared details:', (error as any).response?.data || (error as any).message);
+      console.error(
+        'Error saving cleared details:',
+        (error as any).response?.data || (error as any).message
+      );
       window.alert('Vehicle is already cleared.');
     }
   };
 
   const calculatePendingAmount = () => {
-    const agreed = agreed_amount || (vehicleDetails ? vehicleDetails.agreed_amount.toString() : '0');
-    const received = received_amount || (vehicleDetails ? vehicleDetails.received_amount.toString() : '0');
+    const agreed =
+      agreed_amount ||
+      (vehicleDetails ? vehicleDetails.agreed_amount.toString() : '0');
+    const received =
+      received_amount ||
+      (vehicleDetails ? vehicleDetails.received_amount.toString() : '0');
     return parseInt(agreed, 10) - parseInt(received, 10);
   };
 
@@ -180,11 +190,14 @@ const ViewCarDetails = () => {
     if (pendingAmount > 0) {
       try {
         // Make the second API call with pending amount
-        const response = await axios.post('http://15.207.48.53:3000/processPendingAmount', {
-          vehicleId: vehicleId,
-          pending_amount: pendingAmount,
-          customer_name: issued_to,
-        });
+        const response = await axios.post(
+          'http://15.207.48.53:3000/processPendingAmount',
+          {
+            vehicleId: vehicleId,
+            pending_amount: pendingAmount,
+            customer_name: issued_to,
+          }
+        );
 
         if (response.status === 200 || response.status === 201) {
           window.alert('Pending amount processed successfully.');
@@ -195,15 +208,16 @@ const ViewCarDetails = () => {
           setReceivedAmount('0');
           setFuelExpense('0');
           setMaintenance('0');
-            setDriverExpense('0');
-            setFuelExpense('0');
-            setMaintenance('0');
+          setDriverExpense('0');
         } else {
           const errorMessage = (response.data as { message: string }).message;
           window.alert('Failed to process pending amount: ' + errorMessage);
         }
       } catch (error) {
-        console.error('Error processing pending amount:', (error as any).response?.data || (error as any).message);
+        console.error(
+          'Error processing pending amount:',
+          (error as any).response?.data || (error as any).message
+        );
         window.alert(
           'An error occurred while processing pending amount: ' +
             ((error as any).response?.data.message || (error as any).message)
@@ -243,39 +257,55 @@ const ViewCarDetails = () => {
       {/* Header */}
       <div>
         <Image
-            src="/images/usericon.png"
-            alt="User Icon"
-            width={50}
-            height={50}
-            className="rounded-full"
+          src="/images/usericon.png"
+          alt="User Icon"
+          width={50}
+          height={50}
+          style={styles.usrimg}
+          className="rounded-full"
         />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginLeft: -15, marginTop: 10 }}>
-          <p style={styles.helloname}>Hello,</p><br></br>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            marginLeft: -15,
+            marginTop: 10,
+          }}
+        >
+          <p style={styles.helloname}>Hello,</p>
+          <br />
           <p style={styles.username}>{UserName}</p>
         </div>
-        {/* <button onClick={() => router.push('/logout')} style={{ background: 'none', border: 'none' }}> */}
-          {/* <Image
-                src="/images/Logout.png"
-                alt="User Icon"
-                width={25}
-                height={25}
-                className="rounded-full align-right margin-left-10"
-            /> */}
-            <img src="/images/Logout.png" style={styles.logoutimg} alt="logout" />
-        {/* </button> */}
+        {/* Logout Image replaced with Next.js Image */}
+        <Image
+          src="/images/Logout.png"
+          alt="logout"
+          width={25}
+          height={25}
+          style={styles.logoutimg}
+        />
       </div>
 
       <div style={{ margin: '25px', borderBottom: '1px solid black' }}></div>
 
       {/* Vehicle Details Header */}
       <div>
-        <img src="/images/Car.png" style={styles.carlogo} alt="Car" />
+        <Image
+          src="/images/Car.png"
+          alt="Car"
+          width={25}
+          height={25}
+          style={styles.carlogo}
+        />
         <p style={styles.headingOfHomePage}>Vehicle Details</p>
       </div>
 
       {/* Vehicle Detail Fields */}
       <div>
-        <p style={styles.innertextbelowHeadings}>Name of Vehicle :<br /></p>
+        <p style={styles.innertextbelowHeadings}>
+          Name of Vehicle :<br />
+        </p>
         <input
           style={styles.input}
           value={vehicleDetails.name_of_vehicle}
@@ -283,7 +313,9 @@ const ViewCarDetails = () => {
           readOnly
         />
 
-        <p style={styles.innertextbelowHeadings}>Vehicle Number :<br /></p>
+        <p style={styles.innertextbelowHeadings}>
+          Vehicle Number :<br />
+        </p>
         <input
           style={styles.input}
           value={vehicleId || ''}
@@ -291,7 +323,9 @@ const ViewCarDetails = () => {
           readOnly
         />
 
-        <p style={styles.innertextbelowHeadings}>Issued To :<br /></p>
+        <p style={styles.innertextbelowHeadings}>
+          Issued To :<br />
+        </p>
         <input
           style={styles.input}
           value={issued_to}
@@ -299,25 +333,43 @@ const ViewCarDetails = () => {
           onChange={(e) => setIssuedTo(e.target.value)}
         />
 
-        <p style={styles.innertextbelowHeadings}>Agreed Amount :<br /></p>
+        <p style={styles.innertextbelowHeadings}>
+          Agreed Amount :<br />
+        </p>
         <input
           style={styles.billinginput}
           value={agreed_amount}
-          placeholder={vehicleDetails.agreed_amount ? vehicleDetails.agreed_amount.toString() : ''}
+          placeholder={
+            vehicleDetails.agreed_amount
+              ? vehicleDetails.agreed_amount.toString()
+              : ''
+          }
           onChange={(e) => setAgreedAmount(e.target.value)}
           type="number"
         />
 
-        <p style={styles.innertextbelowHeadings}>Received Amount :<br /></p>
+        <p style={styles.innertextbelowHeadings}>
+          Received Amount :<br />
+        </p>
         <input
           style={styles.billinginput}
           value={received_amount}
-          placeholder={vehicleDetails.received_amount ? vehicleDetails.received_amount.toString() : ''}
+          placeholder={
+            vehicleDetails.received_amount
+              ? vehicleDetails.received_amount.toString()
+              : ''
+          }
           onChange={(e) => setReceivedAmount(e.target.value)}
           type="number"
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <p style={{ fontSize: 15, marginLeft: 950 }}>Date :</p>
           <input
             style={{
@@ -337,7 +389,9 @@ const ViewCarDetails = () => {
 
       {/* Expense Fields */}
       <div style={{ marginTop: '20px' }}>
-        <p style={{ marginLeft: 40, fontSize: 15, marginBottom: -15 }}>Driver Expense :</p>
+        <p style={{ marginLeft: 40, fontSize: 15, marginBottom: -15 }}>
+          Driver Expense :
+        </p>
         <input
           style={{
             width: '30%',
@@ -351,7 +405,11 @@ const ViewCarDetails = () => {
             fontSize: 13,
           }}
           value={driver_expense}
-          placeholder={vehicleDetails.driver_expense ? vehicleDetails.driver_expense.toString() : ''}
+          placeholder={
+            vehicleDetails.driver_expense
+              ? vehicleDetails.driver_expense.toString()
+              : ''
+          }
           onChange={(e) => setDriverExpense(e.target.value)}
           type="number"
         />
@@ -370,7 +428,11 @@ const ViewCarDetails = () => {
             fontSize: 13,
           }}
           value={fuel_expense}
-          placeholder={vehicleDetails.fuel_expense ? vehicleDetails.fuel_expense.toString() : ''}
+          placeholder={
+            vehicleDetails.fuel_expense
+              ? vehicleDetails.fuel_expense.toString()
+              : ''
+          }
           onChange={(e) => setFuelExpense(e.target.value)}
           type="number"
         />
@@ -389,7 +451,11 @@ const ViewCarDetails = () => {
             fontSize: 13,
           }}
           value={maintenance}
-          placeholder={vehicleDetails.maintenance ? vehicleDetails.maintenance.toString() : ''}
+          placeholder={
+            vehicleDetails.maintenance
+              ? vehicleDetails.maintenance.toString()
+              : ''
+          }
           onChange={(e) => setMaintenance(e.target.value)}
           type="number"
         />
@@ -403,7 +469,8 @@ const ViewCarDetails = () => {
       <div style={styles.savebutton}>
         <button
           onClick={() => {
-            if (window.confirm('Do you want to save the details?')) saveCarDetails();
+            if (window.confirm('Do you want to save the details?'))
+              saveCarDetails();
           }}
           style={{
             padding: '10px 20px',
@@ -520,5 +587,27 @@ const styles = {
   },
   error: {
     color: 'red',
+  },
+  headerContainer: {
+    // (Not used in this component but defined in styles above)
+  },
+  headerCell: {
+    fontWeight: 'bold',
+    padding: '10px',
+    textAlign: 'center',
+    border: '1px solid #ccc',
+    color: '#000',
+  },
+  row: {
+    borderBottom: '1px solid #ccc',
+  },
+  headerRow: {
+    backgroundColor: '#d3d3d3',
+  },
+  cell: {
+    padding: '10px',
+    textAlign: 'center' as 'center',
+    border: '1px solid #ccc',
+    wordWrap: 'break-word' as 'break-word',
   },
 };

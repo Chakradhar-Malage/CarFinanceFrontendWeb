@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+/* eslint-disable @typescript-eslint/prefer-as-const */
 
 'use client';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-// import * as XLSX from 'xlsx';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const NonGSTBillingLedger = () => {
   interface LedgerData {
@@ -32,23 +32,6 @@ const NonGSTBillingLedger = () => {
   const [actionValue, setActionValue] = useState('');
 
   const router = useRouter();
-
-  // Excel export using browser Blob API
-  // const exportToExcel = (ledgerData: any) => {
-  //   // const ws = XLSX.utils.json_to_sheet(ledgerData);
-  //   // const wb = XLSX.utils.book_new();
-  //   // XLSX.utils.book_append_sheet(wb, ws, 'LedgerData');
-  //   // const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  //   // const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-  //   // const url = window.URL.createObjectURL(blob);
-  //   const link = document.createElement('a');
-  //   link.href = url;
-  //   link.download = 'ledgerData.xlsx';
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  //   window.alert('Excel File Created');
-  // };
 
   // PDF export using a new window and window.print()
   const exportToPDF = (ledgerData: any) => {
@@ -118,10 +101,12 @@ const NonGSTBillingLedger = () => {
     axios
       .get('http://15.207.48.53:3000/nongstcustomer')
       .then((response) => {
-        const customers = (response.data as { name: string }[]).map((customer: { name: string }) => ({
-          label: customer.name,
-          value: customer.name,
-        }));
+        const customers = (response.data as { name: string }[]).map(
+          (customer: { name: string }) => ({
+            label: customer.name,
+            value: customer.name,
+          })
+        );
         setCustomerList(customers);
       })
       .catch((error) =>
@@ -141,8 +126,6 @@ const NonGSTBillingLedger = () => {
     axios
       .get(query)
       .then((response) => {
-        // Only update if data changed
-        setLedgerData(response.data as LedgerData[]);
         // Only update if data changed
         if (JSON.stringify(response.data) !== JSON.stringify(ledgerData)) {
           setLedgerData(response.data as LedgerData[]);
@@ -167,9 +150,10 @@ const NonGSTBillingLedger = () => {
       setPaymentStatusFilter(newFilter);
     }
   };
+
   useEffect(() => {
     fetchCustomerNames();
-    // Optionally, you could fetch ledger data on mount here if needed.
+    // Optionally, fetch ledger data on mount here if needed.
     // fetchLedgerData();
   }, []);
 
@@ -180,7 +164,14 @@ const NonGSTBillingLedger = () => {
       <td style={{ ...styles.cell, minWidth: 70, maxWidth: 70 }}>
         {item.InvoiceNo || '-'}
       </td>
-      <td style={{ ...styles.cell, minWidth: 180, maxWidth: 180, textAlign: 'center' as 'center' }}>
+      <td
+        style={{
+          ...styles.cell,
+          minWidth: 180,
+          maxWidth: 180,
+          textAlign: 'center' as 'center',
+        }}
+      >
         {item.CustomerName || '-'}
       </td>
       <td style={{ ...styles.cell, minWidth: 101, maxWidth: 120 }}>
@@ -211,10 +202,12 @@ const NonGSTBillingLedger = () => {
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.headerContainer}>
-        <img
+        <Image
           style={styles.usrimg}
           src="/images/usericon.png"
           alt="User Icon"
+          width={50}
+          height={50}
         />
         <div style={styles.userInfo}>
           <p style={styles.helloname}>Hello,</p>

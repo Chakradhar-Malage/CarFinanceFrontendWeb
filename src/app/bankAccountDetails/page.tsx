@@ -1,313 +1,277 @@
-'use client';
+/* eslint-disable @typescript-eslint/prefer-as-const */
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { globalState } from '../../globalState';
+"use client";
 
-const BankAccountDetails = () => {
-  const router = useRouter();
-  // Retrieve bankName from query string (e.g. /bank-account-details?bankName=ABC)
+import { Suspense, useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+// import Image from "next/image";
+
+interface Transaction {
+  id: string;
+  transaction_date: string;
+  transaction_type: string;
+  amount: number;
+  description: string;
+}
+
+function TransactionsScreenContent() {
   const searchParams = useSearchParams();
-  const bankName = searchParams.get('bankName');
-  const UserName = globalState.UserName;
+  const bankName = searchParams.get("bankName");
 
-  // State to hold account details (fetched from API)
-  interface Account {
-    name: string;
-    current_balance: number;
-  }
+  // State for filter and custom dates
+  const [filter, setFilter] = useState("last7days"); // Options: last7days, lastMonth, last3Months, custom
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
 
-  const [account, setAccount] = useState<Account | null>(null);
+  // Transactions state and loading flag
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // States for transaction form
-  const [showTransactionForm, setShowTransactionForm] = useState(false);
-  const [transactionType, setTransactionType] = useState<string | null>(null); // 'credit' or 'debit'
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Options for view transactions
-  const options = [
-    { title: 'View Transactions', key: 'transactions' },
-  ];
-
-  // Function to fetch all accounts and then filter for the current account by bankName
-  const fetchAccountData = async () => {
+  // Wrap fetchTransactions in useCallback so it can be safely included in useEffect's dependency array.
+  const fetchTransactions = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('http://15.207.48.53:3000/api/accounts');
+      let url = `http://15.207.48.53:3000/api/transactions?bankName=${encodeURIComponent(
+        bankName || ""
+      )}`;
+      if (filter === "custom") {
+        if (!customStartDate || !customEndDate) {
+          window.alert(
+            "Validation Error: Please select both start and end dates for custom filter."
+          );
+          setIsLoading(false);
+          return;
+        }
+        url += `&filter=custom&start_date=${encodeURIComponent(
+          customStartDate
+        )}&end_date=${encodeURIComponent(customEndDate)}`;
+      } else {
+        url += `&filter=${filter}`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error fetching accounts:', errorData.message);
+        window.alert(
+          errorData.message ||
+            "Something went wrong fetching transactions."
+        );
+        setIsLoading(false);
         return;
       }
       const data = await response.json();
-      // Find the account that matches the bankName
-      const found = data.accounts.find((acc: { name: string }) => acc.name === bankName);
-      if (found) {
-        setAccount(found);
-      }
+      setTransactions(data.transactions);
     } catch (error) {
-      console.error('Error fetching account data:', error);
+      console.error("Error fetching transactions:", error);
+      window.alert("Unable to fetch transactions.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [bankName, filter, customStartDate, customEndDate]);
 
-  // Fetch account data when component mounts or when bankName changes
+  // Fetch transactions when bankName or any filter/date changes.
   useEffect(() => {
     if (bankName) {
-      fetchAccountData();
+      fetchTransactions();
     }
-  }, [bankName]);
-
-  // Handler for view transactions option
-  const handleOptionPress = (optionKey: string) => {
-    if (optionKey === 'transactions') {
-      router.push(`/TransactionsScreen?bankName=${bankName}`);
-    }
-  };
-
-  // When Credit or Debit is pressed, open the modal with the correct transaction type
-  const handleTransactionPress = (type: string) => {
-    setTransactionType(type);
-    setShowTransactionForm(true);
-  };
-
-  const handleCancelTransaction = () => {
-    setShowTransactionForm(false);
-    setAmount('');
-    setDescription('');
-    setTransactionType(null);
-  };
-
-  // Submit a transaction and refresh account data afterward
-  const handleSubmitTransaction = async () => {
-    if (!amount || isNaN(Number(amount))) {
-      window.alert('Validation Error: Please enter a valid amount');
-      return;
-    }
-    setIsSubmitting(true);
-
-    const payload = {
-      bankName,
-      transactionType,
-      amount: parseFloat(amount),
-      description,
-    };
-
-    try {
-      const response = await fetch('http://15.207.48.53:3000/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        window.alert(errorData.message || 'Something went wrong');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const data = await response.json();
-      console.log('Transaction successful:', data);
-      window.alert('Success: Transaction processed successfully');
-
-      // Reset form and close modal
-      setShowTransactionForm(false);
-      setAmount('');
-      setDescription('');
-      setTransactionType(null);
-      // Refresh account details to display updated current balance
-      fetchAccountData();
-    } catch (error) {
-      console.error('API Error:', error);
-      window.alert('Error: Unable to process transaction at this time.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [bankName, filter, customStartDate, customEndDate, fetchTransactions]);
 
   return (
     <div style={styles.container}>
-      {/* Header Section */}
-      <div style={styles.headerContainer}>
-        <img
-          style={styles.usrimg}
-          src="images/usericon.png"
-          alt="User Icon"
-        />
-        <div style={styles.userInfo}>
-          <p style={styles.helloname}>Hello,</p>
-          <p style={styles.username}>{UserName}</p>
-        </div>
-        <button style={styles.logoutButton} onClick={() => console.log('Logout pressed')}>
-          <img style={styles.logoutimg} src="/assets/images/Logout.png" alt="Logout" />
-        </button>
-      </div>
-      <div style={styles.separator} />
+      <h1 style={styles.header}>
+        Transactions for {bankName || "Unknown Bank"}
+      </h1>
 
-      {/* Selected Bank/Cash Title and Balance */}
-      <div style={styles.selectedBankContainer}>
-        <p style={styles.selectedBankText}>{bankName} Account Details</p>
-        {account && (
-          <p style={styles.balanceText}>Current Balance: Rs. {account.current_balance}</p>
-        )}
-      </div>
-
-      {/* Options List */}
-      <div style={styles.optionsContainer}>
-        {options.map((option) => (
+      {/* Filter Options */}
+      <div style={styles.filterContainer}>
+        {["last7days", "lastMonth", "last3Months", "custom"].map((opt) => (
           <button
-            key={option.key}
-            style={styles.optionButton}
-            onClick={() => handleOptionPress(option.key)}
+            key={opt}
+            style={{
+              ...styles.filterButton,
+              ...(filter === opt ? styles.selectedFilter : {}),
+            }}
+            onClick={() => setFilter(opt)}
           >
-            {option.title}
+            {opt === "last7days"
+              ? "Last 7 Days"
+              : opt === "lastMonth"
+              ? "Last Month"
+              : opt === "last3Months"
+              ? "Last 3 Months"
+              : "Custom"}
           </button>
         ))}
       </div>
 
-      {/* Credit and Debit Buttons */}
-      <div style={styles.transactionRow}>
-        <button style={styles.transactionButton} onClick={() => handleTransactionPress('credit')}>
-          Credit
-        </button>
-        <button style={styles.transactionButton} onClick={() => handleTransactionPress('debit')}>
-          Debit
-        </button>
-      </div>
-
-      {/* Transaction Form Modal */}
-      {showTransactionForm && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContainer}>
-            <h2 style={styles.modalTitle}>
-              {transactionType === 'credit' ? 'Credit Transaction' : 'Debit Transaction'}
-            </h2>
+      {/* Custom Date Inputs */}
+      {filter === "custom" && (
+        <div style={styles.customDatesContainer}>
+          <div style={styles.datePickerContainer}>
+            <label style={styles.dateLabel}>Start Date:</label>
             <input
-              style={styles.input}
-              type="number"
-              placeholder="Enter amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              type="date"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              style={styles.datePickerInput}
             />
+          </div>
+          <div style={styles.datePickerContainer}>
+            <label style={styles.dateLabel}>End Date:</label>
             <input
-              style={styles.input}
-              type="text"
-              placeholder={
-                transactionType === 'credit'
-                  ? 'Description of credit:'
-                  : 'Reason for debit?'
-              }
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              type="date"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              style={styles.datePickerInput}
             />
-            <div style={styles.modalButtonRow}>
-              <button style={styles.modalButton} onClick={handleCancelTransaction} disabled={isSubmitting}>
-                Cancel
-              </button>
-              <button style={styles.modalButton} onClick={handleSubmitTransaction} disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </button>
-            </div>
           </div>
         </div>
       )}
+
+      {/* Refresh Button */}
+      <button style={styles.refreshButton} onClick={fetchTransactions}>
+        {isLoading ? "Loading..." : "Refresh Transactions"}
+      </button>
+
+      {/* Transactions Table */}
+      <div style={styles.tableContainer}>
+        <div style={styles.table}>
+          <div style={styles.tableHeader}>
+            <div style={{ ...styles.headerCell, minWidth: 100, textAlign: "center" }}>Date</div>
+            <div style={{ ...styles.headerCell, minWidth: 80, textAlign: "center" }}>Type</div>
+            <div style={{ ...styles.headerCell, minWidth: 80, textAlign: "center" }}>Amount</div>
+            <div style={{ ...styles.headerCell, minWidth: 200, textAlign: "center" }}>
+              Description
+            </div>
+          </div>
+          {transactions.length === 0 ? (
+            <p style={{ ...styles.noTransactions, textAlign: "center" }}>
+              No transactions available for selected period.
+            </p>
+          ) : (
+            transactions.map((tx) => (
+              <div key={tx.id} style={styles.tableRow}>
+                <div style={{ ...styles.cell, minWidth: 100, textAlign: "center" }}>
+                  {new Date(tx.transaction_date).toLocaleDateString()}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 80, textAlign: "center" }}>
+                  {tx.transaction_type}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 80, textAlign: "center" }}>
+                  Rs. {tx.amount}
+                </div>
+                <div style={{ ...styles.cell, minWidth: 200, textAlign: "center" }}>
+                  {tx.description}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
-};
+}
 
-export default BankAccountDetails;
+export default function TransactionsScreen() {
+  return (
+    <Suspense fallback={<div>Loading Transactions...</div>}>
+      <TransactionsScreenContent />
+    </Suspense>
+  );
+}
 
-import { CSSProperties } from 'react';
-
-const styles: { [key: string]: CSSProperties } = {
-  container: { backgroundColor: '#fff', fontFamily: 'Arial, sans-serif', minHeight: '100vh' },
-  headerContainer: { display: 'flex', alignItems: 'center', padding: 20 },
-  usrimg: { width: 50, height: 50, borderRadius: '50%' },
-  userInfo: { marginLeft: 10, flex: 1 },
-  helloname: { fontSize: 14, color: '#333', margin: 0 },
-  username: { fontSize: 16, fontWeight: 'bold', color: 'darkslategrey', margin: 0 },
-  logoutButton: { background: 'none', border: 'none', cursor: 'pointer' },
-  logoutimg: { width: 25, height: 25 },
-  separator: { borderBottom: '1px solid rgb(0,0,0)', margin: '10px 20px' },
-  selectedBankContainer: {
-    margin: '10px 20px',
-    padding: 15,
-    borderRadius: 5,
-    backgroundColor: '#f0f0f0',
-    textAlign: 'center' as 'center',
-  },
-  selectedBankText: { fontSize: 18, fontWeight: 'bold', color: '#333', margin: 0 },
-  balanceText: { fontSize: 16, marginTop: 5, color: 'green' },
-  optionsContainer: { margin: '20px 20px' },
-  optionButton: {
-    backgroundColor: '#841584',
-    padding: '15px 20px',
-    borderRadius: 5,
-    marginBottom: 15,
-    width: '100%',
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    border: 'none',
-    cursor: 'pointer',
-  },
-  transactionRow: {
-    display: 'flex',
-    justifyContent: 'space-around',
-    margin: '20px 20px',
-  },
-  transactionButton: {
-    backgroundColor: '#841584',
-    padding: '15px 20px',
-    borderRadius: 5,
-    flex: '0 0 45%',
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    border: 'none',
-    cursor: 'pointer',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  modalContainer: {
-    width: '80%',
-    maxWidth: 400,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+const styles = {
+  container: {
     padding: 20,
-    textAlign: 'center',
+    backgroundColor: "#fff",
+    fontFamily: "Arial, sans-serif",
+    minHeight: "100vh",
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-  input: {
-    width: '100%',
-    padding: 10,
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
     marginBottom: 10,
-    border: '1px solid #ccc',
-    borderRadius: 5,
-    boxSizing: 'border-box',
   },
-  modalButtonRow: { display: 'flex', justifyContent: 'space-around' },
-  modalButton: {
-    backgroundColor: '#841584',
-    padding: '10px 20px',
+  filterContainer: {
+    display: "flex",
+    justifyContent: "space-around",
+    marginBottom: 10,
+    flexWrap: "wrap" as "wrap",
+    gap: "10px",
+  },
+  filterButton: {
+    padding: "10px 15px",
+    backgroundColor: "#ccc",
+    border: "none",
     borderRadius: 5,
-    border: 'none',
-    color: '#fff',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    minWidth: 100,
+    cursor: "pointer",
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  selectedFilter: {
+    backgroundColor: "#007BFF",
+  },
+  customDatesContainer: {
+    display: "flex",
+    justifyContent: "space-around",
+    marginBottom: 10,
+    flexWrap: "wrap" as "wrap",
+    gap: "10px",
+  },
+  datePickerContainer: {
+    display: "flex",
+    flexDirection: "column" as "column",
+    alignItems: "center",
+  },
+  dateLabel: {
+    marginBottom: 5,
+  },
+  datePickerInput: {
+    padding: 10,
+    borderRadius: 5,
+    border: "1px solid #ccc",
+  },
+  refreshButton: {
+    backgroundColor: "#007BFF",
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: 5,
+    cursor: "pointer",
+    color: "#fff",
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  tableContainer: {
+    overflowX: "auto" as "auto",
+  },
+  table: {
+    minWidth: "500px",
+    border: "1px solid #ddd",
+    borderRadius: 5,
+  },
+  tableHeader: {
+    display: "flex",
+    backgroundColor: "#f0f0f0",
+    borderBottom: "1px solid #ddd",
+  },
+  headerCell: {
+    flex: 1,
+    padding: 10,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  tableRow: {
+    display: "flex",
+    borderBottom: "1px solid #ddd",
+  },
+  cell: {
+    flex: 1,
+    padding: 10,
+    textAlign: "center",
+  },
+  noTransactions: {
+    textAlign: "center",
+    margin: 20,
+    fontSize: 16,
   },
 };

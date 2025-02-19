@@ -391,7 +391,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { globalState } from '../../globalState';
 
 const Home = () => {
@@ -457,7 +458,9 @@ const Home = () => {
         setMaintenance('0');
       } else {
         console.error('Error:', result);
-        window.alert('Error: ' + (result.error || 'Failed to save vehicle details.'));
+        window.alert(
+          'Error: ' + (result.error || 'Failed to save vehicle details.')
+        );
       }
     } catch (error) {
       console.error('Network Error:', error);
@@ -480,13 +483,25 @@ const Home = () => {
       <div className="scrollView">
         {/* Header Section */}
         <div className="header">
-          <img className="usrimg" src="/images/usericon.png" alt="User Icon" />
+          <Image
+            className="usrimg"
+            src="/images/usericon.png"
+            alt="User Icon"
+            width={50}
+            height={50}
+          />
           <div className="headerText">
             <p className="helloname">Hello,</p>
             <p className="username">{UserName}</p>
           </div>
           <button className="logoutButton" onClick={() => console.log('Logout pressed')}>
-            <img className="logoutimg" src="/images/Logout.png" alt="Logout" />
+            <Image
+              className="logoutimg"
+              src="/images/Logout.png"
+              alt="Logout"
+              width={25}
+              height={25}
+            />
           </button>
         </div>
         <hr className="divider" />
@@ -494,7 +509,13 @@ const Home = () => {
         {/* Vehicle Details Section */}
         <div className="section">
           <div className="sectionHeader">
-            <img src="/images/Car.png" className="icon" alt="Car Logo" />
+            <Image
+              src="/images/Car.png"
+              className="icon"
+              alt="Car Logo"
+              width={25}
+              height={25}
+            />
             <p className="sectionTitle">Enter Vehicle Details</p>
           </div>
           <div className="inputGroup">
@@ -529,7 +550,13 @@ const Home = () => {
         {/* Billing Details Section */}
         <div className="section">
           <div className="sectionHeader">
-            <img src="/images/Bill.png" className="icon" alt="Bill Logo" />
+            <Image
+              src="/images/Bill.png"
+              className="icon"
+              alt="Bill Logo"
+              width={25}
+              height={25}
+            />
             <p className="sectionTitle">Billing Details</p>
           </div>
           <div className="inputGroup">
@@ -564,7 +591,13 @@ const Home = () => {
         {/* Other Expenses Section */}
         <div className="section">
           <div className="sectionHeader">
-            <img src="/images/Money.png" className="icon" alt="Money Logo" />
+            <Image
+              src="/images/Money.png"
+              className="icon"
+              alt="Money Logo"
+              width={25}
+              height={25}
+            />
             <p className="sectionTitle">Other Expenses</p>
           </div>
           <div className="inputGroup">
@@ -731,3 +764,4 @@ const Home = () => {
 };
 
 export default Home;
+
